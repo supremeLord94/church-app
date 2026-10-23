@@ -39,7 +39,7 @@ function PersonCard({ p, byId, onOpen }) {
       <header>
         <h2>{fullName(p)}</h2>
         <div className="meta">
-          <span className={`pill ${p.status === 'visitor' ? 'pink' : p.status === 'inactive' ? 'grey' : 'orange'}`}>{STATUS[p.status]}</span>
+          <span className={`pill ${p.status === 'visitor' ? 'cyan' : p.status === 'inactive' ? 'grey' : 'orange'}`}>{STATUS[p.status]}</span>
           {p.section && <span className="pill">Sección {p.section}</span>}
         </div>
       </header>

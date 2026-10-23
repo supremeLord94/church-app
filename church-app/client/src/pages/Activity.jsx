@@ -12,8 +12,8 @@ const CATEGORIES = {
   escuela: 'Escuela de Vida',
   ajustes: 'Ajustes',
 };
-// Orange = routine, pink = things worth a second look (account/user changes, failed sign-ins).
-const pillClass = (a) => (a.action === 'login.fail' || a.action === 'login.blocked' ? 'pink solid' : ['usuarios', 'cuenta'].includes(a.category) ? 'pink' : a.category === 'sesion' ? '' : 'orange');
+// Blue = routine, cyan = account/user changes, red = failed sign-ins and blocked accounts.
+const pillClass = (a) => (a.action === 'login.fail' || a.action === 'login.blocked' ? 'pink solid' : ['usuarios', 'cuenta'].includes(a.category) ? 'cyan' : a.category === 'sesion' ? '' : 'orange');
 
 const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const ipLabel = (ip) => (['::1', '127.0.0.1'].includes(ip) ? 'Este equipo (local)' : ip || '—');

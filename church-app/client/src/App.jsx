@@ -48,14 +48,14 @@ function Shell({ children }) {
         <button className="menu-btn" aria-label="Abrir menú" aria-expanded={open} aria-controls="sidebar" onClick={() => setOpen(true)}>
           <Icon name="menu" />
         </button>
-        <span className="brand"><span className="mark" aria-hidden="true" />Mi Iglesia</span>
+        <span className="brand"><img className="brand-logo" src="/logo.png" alt="" />Familia Real</span>
       </header>
 
       {open && <button className="scrim" aria-label="Cerrar menú" onClick={() => setOpen(false)} />}
 
       <aside id="sidebar" className={`side ${open ? 'open' : ''}`}>
         <div className="side-head">
-          <span className="brand"><span className="mark" aria-hidden="true" />Mi Iglesia</span>
+          <span className="brand"><img className="brand-logo" src="/logo.png" alt="" />Familia Real</span>
           <button className="menu-btn close" aria-label="Cerrar menú" onClick={() => setOpen(false)}><Icon name="close" /></button>
         </div>
         <nav className="nav">

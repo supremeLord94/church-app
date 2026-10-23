@@ -132,12 +132,12 @@ export default function Users() {
                 <strong>{u.name}</strong>{u._id === me.id && <span className="muted small"> (tú)</span>}
                 <div className="muted small">{u.username ? `${u.username} · ` : ''}{u.email}</div>
               </div>
-              <span className={`pill ${u.role === 'admin' ? 'orange' : u.role === 'teacher' ? 'pink' : ''}`}>{ROLE_LABEL[u.role] || u.role}</span>
+              <span className={`pill ${u.role === 'admin' ? 'orange' : u.role === 'teacher' ? 'cyan' : ''}`}>{ROLE_LABEL[u.role] || u.role}</span>
             </div>
             <div>
               {u.lockedUntil ? <span className="pill pink solid" title="Se desbloquea sola o al restablecer la contraseña">Bloqueado hasta {new Date(u.lockedUntil).toLocaleTimeString('es', { hour: 'numeric', minute: '2-digit' })}</span>
                 : !u.active ? <span className="pill grey">Desactivado</span>
-                : u.mustChangePassword ? <span className="pill pink">Debe cambiar contraseña</span>
+                : u.mustChangePassword ? <span className="pill cyan">Debe cambiar contraseña</span>
                 : <span className="pill">Activo</span>}
             </div>
             <div className="user-actions">

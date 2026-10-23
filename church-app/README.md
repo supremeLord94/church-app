@@ -1,4 +1,4 @@
-# Church app (MERN): attendance, users, Escuela de Vida
+# Familia Real church app (MERN): attendance, users, Escuela de Vida
 
 Modules so far: Sunday attendance, people records, user management with roles, Escuela de Vida, and an activity log. The interface is in Spanish with a light theme. On desktop the menu is pinned to the left; on phones and tablets it opens from the menu button (top left).
 
@@ -23,6 +23,10 @@ npm run dev                   # http://localhost:5173
 To open it from a phone or iPad on the same Wi-Fi, just use the `Network:` address Vite prints (`host: true` is already set in `client/vite.config.js`).
 
 If you used an earlier version, existing "secretary" accounts are converted to the new "usuario" role automatically the first time the API starts.
+
+## Branding
+
+The name, logo and colors can be changed in three places: the name in `client/src/App.jsx` and `client/src/pages/Login.jsx`, the logo files in `client/public/` (`logo.png`, `favicon.png`), and the color variables at the top of `client/src/styles.css`.
 
 ## Roles
 

@@ -90,7 +90,7 @@ export default function Attendance() {
                     <span className="tile-text">
                       <span className="name">{fullName(p)}</span>
                       <span className="meta">
-                        {p.status === 'visitor' && <span className="pill pink">Visita</span>}
+                        {p.status === 'visitor' && <span className="pill cyan">Visita</span>}
                         {p.section && <span className="pill">Sección {p.section}</span>}
                       </span>
                     </span>

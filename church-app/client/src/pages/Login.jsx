@@ -30,7 +30,7 @@ export default function Login() {
   return (
     <div className="login">
       <form onSubmit={submit} className="card">
-        <div className="brand"><span className="mark" aria-hidden="true" />Mi Iglesia</div>
+        <div className="brand"><img className="brand-logo" src="/logo.png" alt="" />Familia Real</div>
         <h1>Iniciar sesión</h1>
         <label>Correo o nombre de usuario
           <input value={identifier} onChange={(e) => setIdentifier(e.target.value)} required autoFocus autoCapitalize="none" autoCorrect="off" autoComplete="username" />
