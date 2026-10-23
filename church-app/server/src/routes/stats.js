@@ -5,6 +5,7 @@ import Attendance from '../models/Attendance.js';
 import Settings from '../models/Settings.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { upcomingBirthdays } from '../birthdays.js';
+import { computeMissing } from '../missing.js';
 
 const router = Router();
 router.use(requireAuth, requireRole('admin'));
@@ -67,44 +68,16 @@ router.get('/overview', async (req, res) => {
   });
 });
 
-// GET /api/stats/missing?threshold=3
-// Members who missed the last N (or more) services in a row, since they joined.
-router.get('/missing', async (req, res) => {
-  const threshold = Math.max(1, Number(req.query.threshold) || 3);
-  const services = await Service.find().sort({ date: -1 }).limit(26).lean(); // newest first
-  if (!services.length) return res.json({ threshold, servicesChecked: 0, people: [] });
-
+// GET /api/stats/missing
+// Every member who missed at least one service in the last 6 weeks, most missed first.
+router.get('/missing', async (_req, res) => {
+  const services = await Service.find().sort({ date: -1 }).limit(60).lean(); // newest first
   const dates = services.map((s) => s.date);
-  const rows = await Attendance.find({ date: { $in: dates } }).select('date person').lean();
+  const rows = dates.length ? await Attendance.find({ date: { $in: dates } }).select('date person').lean() : [];
   const presentBy = {};
   for (const r of rows) (presentBy[r.date] ||= new Set()).add(String(r.person));
-
-  const members = await Person.find({ status: 'member' }).lean();
-  const people = [];
-  for (const m of members) {
-    const eligible = services.filter((s) => s.date >= (m.joinedAt || '0000-00-00'));
-    let consecutive = 0;
-    for (const s of eligible) {
-      if (presentBy[s.date]?.has(String(m._id))) break;
-      consecutive++;
-    }
-    if (consecutive < threshold) continue;
-    const lastSeen = eligible.find((s) => presentBy[s.date]?.has(String(m._id)))?.date || null;
-    const last8 = eligible.slice(0, 8);
-    people.push({
-      _id: m._id,
-      firstName: m.firstName,
-      lastName: m.lastName,
-      phone: m.phone,
-      section: m.section,
-      consecutiveMissed: consecutive,
-      lastSeen, // null = not seen in the last 26 services (or since joining)
-      missedOfLast8: last8.filter((s) => !presentBy[s.date]?.has(String(m._id))).length,
-      checkedLast8: last8.length,
-    });
-  }
-  people.sort((a, b) => b.consecutiveMissed - a.consecutiveMissed || a.lastName.localeCompare(b.lastName));
-  res.json({ threshold, servicesChecked: services.length, people });
+  const members = await Person.find({ status: 'member' }).select('firstName lastName phone section joinedAt').lean();
+  res.json(computeMissing({ services, presentBy, members }));
 });
 
 export default router;

@@ -52,7 +52,7 @@ function PersonCard({ p, byId, onOpen }) {
       ) : (
         <p className="muted small">Todavía no hay más datos. Toca la tarjeta para completarlos.</p>
       )}
-      <footer><button className="link" onClick={onOpen}>Editar</button></footer>
+      <footer><button className="edit-btn" onClick={onOpen}>Editar</button></footer>
     </article>
   );
 }

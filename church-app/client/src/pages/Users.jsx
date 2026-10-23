@@ -137,7 +137,7 @@ export default function Users() {
             <div>
               {u.lockedUntil ? <span className="pill pink solid" title="Se desbloquea sola o al restablecer la contraseña">Bloqueado hasta {new Date(u.lockedUntil).toLocaleTimeString('es', { hour: 'numeric', minute: '2-digit' })}</span>
                 : !u.active ? <span className="pill grey">Desactivado</span>
-                : u.mustChangePassword ? <span className="pill cyan">Debe cambiar contraseña</span>
+                : u.mustChangePassword ? <span className="pill amber">Debe cambiar contraseña</span>
                 : <span className="pill">Activo</span>}
             </div>
             <div className="user-actions">

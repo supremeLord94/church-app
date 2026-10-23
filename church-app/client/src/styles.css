@@ -14,9 +14,17 @@
   --accent: #14a8d4;         /* highlights, meters, active-menu bar */
   --accent-deep: #0c7fa3;
   --accent-soft: #e3f5fb;
-  --alert: #c7304b;          /* needs attention: errors, at-risk, failed sign-ins */
-  --alert-bright: #ef5d78;
-  --alert-soft: #fde8ec;
+  --alert: #d6336c;          /* critical / urgent (pink): errors, at-risk, failed sign-ins */
+  --alert-bright: #f06595;
+  --alert-soft: #ffe9f1;
+  --amber: #f59e0b;          /* warnings (orange-yellow): low attendance, action needed */
+  --amber-soft: #fff3d1;
+  --amber-text: #8a5300;
+  --amber-line: #f5d58a;
+  --orange: #c2410c;         /* edit buttons */
+  --orange-deep: #9a3412;
+  --green-soft: #e6f5ec;
+  --green-line: #9ad3b1;
   --green: #1e7b46;
   --font-head: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
   --font-body: 'Figtree', 'Segoe UI', system-ui, sans-serif;
@@ -116,7 +124,7 @@ button { cursor: pointer; border: 1px solid #a8b6d8; background: var(--surface);
 button:hover { background: var(--primary-soft); border-color: var(--primary-line); }
 button.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
 button.primary:hover { background: var(--primary-deep); border-color: var(--primary-deep); }
-button.danger { color: var(--alert); border-color: #f7b8c3; }
+button.danger { color: var(--alert); border-color: #f9c0d4; }
 button.danger:hover { background: var(--alert-soft); }
 button.link { border: 0; background: none; color: var(--primary-deep); padding: 8px; min-height: 0; }
 button.link:hover { background: none; text-decoration: underline; }
@@ -140,7 +148,7 @@ button:disabled { opacity: 0.55; cursor: default; }
 .pill { display: inline-block; font-size: 0.78rem; padding: 2px 10px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); color: var(--muted); font-weight: 600; white-space: nowrap; }
 .pill.orange { background: var(--primary-soft); color: var(--primary-deep); border-color: var(--primary-line); }
 .pill.ink { background: #edf0f7; color: var(--ink); border-color: #d5dceb; }
-.pill.pink { background: var(--alert-soft); color: var(--alert); border-color: #f7b8c3; }
+.pill.pink { background: var(--alert-soft); color: var(--alert); border-color: #f9c0d4; }
 .pill.pink.solid { background: var(--alert); color: #fff; border-color: var(--alert); }
 .pill.grey { opacity: 0.7; }
 .pill.tight { margin-left: 8px; }
@@ -367,3 +375,11 @@ a.pill.action { background: var(--primary-deep); border-color: var(--primary-dee
 .tile.on .check { background: var(--primary); border-color: var(--primary); }
 .pill.cyan { background: var(--accent-soft); color: var(--accent-deep); border-color: #bde7f4; }
 .bday-date { background: var(--accent-soft); color: var(--accent-deep); }
+
+/* ---------- Urgency, presence and edit colors ---------- */
+.pill.amber { background: var(--amber-soft); color: var(--amber-text); border-color: var(--amber-line); }
+.notice { background: var(--amber-soft); border-color: var(--amber-line); }
+.tile.on { background: var(--green-soft); border-color: var(--green); }
+.tile.on .check { background: var(--green); border-color: var(--green); }
+.edit-btn { background: var(--orange); border-color: var(--orange); color: #fff; min-height: 38px; padding: 6px 18px; }
+.edit-btn:hover { background: var(--orange-deep); border-color: var(--orange-deep); }

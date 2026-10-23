@@ -9,7 +9,7 @@ export const courseLabel = (id) => COURSES.find((c) => c.id === id)?.label || '‚
 export const STAGES = {
   graduated: { label: 'Termin√≥ la escuela', cls: 'orange' },
   in_progress: { label: 'En curso', cls: 'ink' },
-  stalled: { label: 'Se detuvo', cls: 'pink' },
+  stalled: { label: 'Se detuvo', cls: 'amber' },
   not_started: { label: 'No ha empezado', cls: 'grey' },
 };
 export const STAGE_ORDER = ['stalled', 'in_progress', 'not_started', 'graduated'];

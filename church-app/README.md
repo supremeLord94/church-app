@@ -56,7 +56,7 @@ Users can sign in with their **email or their username**. A username is optional
 - A Sunday is created the first time someone is marked present. "Missing" means active members who were not marked.
 - **Personas** opens the person form as a centered window. City and state are prefilled with Tijuana / BC when empty (`DEFAULT_CITY` and `DEFAULT_STATE` in `client/src/components/PersonForm.jsx`). Name and phone fields ask the browser not to autofill. Registering someone with the same first and last name as an existing person asks for confirmation first.
 - **Resumen** also lists everyone with a birthday in the next 4 weeks.
-- **Ausentes** lists members who missed N or more Sundays in a row. **Resumen** shows totals, a 12-week chart with the goal, and a per-section breakdown (admin only).
+- **Ausentes** lists every member who missed at least one service in the last 6 weeks (the 6 weeks ending at the most recent recorded service). Every missed service counts, in a row or not, and a person is only counted from their first counted Sunday. Most missed first, with how many services they attended. **Crítico** (pink) = 4 or more missed, **Baja** (orange-yellow) = 2 or 3, no tag for 1. Thresholds are `CRITICAL_AT` and `LOW_AT` in `server/src/missing.js`. **Resumen** shows totals, a 12-week chart with the goal, and a per-section breakdown (admin only).
 
 ## Escuela de Vida
 
