@@ -38,7 +38,7 @@ export default function Missing() {
       {data && data.people.length > 0 && (
         <div className="split miss-split">
           <div className="card flush scroll-x">
-            <table className="table stack">
+            <table className="table cards-sm">
               <thead><tr><th>Persona</th><th>Seguidos</th><th>Última vez</th><th>Últimos 8 domingos</th><th>Sección</th><th /></tr></thead>
               <tbody>
                 {data.people.map((p) => (

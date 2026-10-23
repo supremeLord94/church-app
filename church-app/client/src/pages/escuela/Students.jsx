@@ -65,7 +65,7 @@ export default function Students() {
       {error && <p className="error">{error}</p>}
 
       <div className="card flush scroll-x">
-        <table className="table stack">
+        <table className="table cards-sm">
           <thead>
             <tr><th>Persona</th><th>Etapa</th><th>Cursos completados</th><th>Último curso</th><th>Asistencia</th><th>Tareas</th><th>Última asistencia</th><th>Sección</th><th /></tr>
           </thead>

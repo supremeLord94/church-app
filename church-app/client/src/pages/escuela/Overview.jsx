@@ -32,7 +32,7 @@ function AtRiskTable({ rows, threshold }) {
     return <p className="pad muted">Nadie ha faltado {threshold} clases seguidas ni dejado de entregar {threshold} tareas seguidas.</p>;
   }
   return (
-    <table className="table stack">
+    <table className="table cards-sm">
       <thead><tr><th>Alumno</th><th>Curso</th><th>Faltas seguidas</th><th>Sin tarea seguidas</th><th>Última asistencia</th><th /></tr></thead>
       <tbody>
         {rows.map((r) => (
@@ -163,7 +163,7 @@ export default function Overview() {
             <h2>Se detuvieron</h2>
             <span className="muted small">Empezaron la escuela pero ya no están en ningún curso</span>
           </div>
-          <table className="table stack">
+          <table className="table cards-sm">
             <thead><tr><th>Persona</th><th>Último curso</th><th>Última asistencia</th><th>Sección</th><th /></tr></thead>
             <tbody>
               {data.stalledList.slice(0, 15).map((r) => (

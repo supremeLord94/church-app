@@ -1,10 +1,61 @@
-import { useEffect, useState } from 'react';
-import { api, fullName } from '../api.js';
+import { useEffect, useMemo, useState } from 'react';
+import { api, formatDate, fullName } from '../api.js';
 import { useAuth } from '../auth.jsx';
+import { plain } from '../text.js';
 import PageHeader from '../components/PageHeader.jsx';
 import PersonForm from '../components/PersonForm.jsx';
 
 const STATUS = { member: 'Miembro', visitor: 'Visita', inactive: 'Inactivo' };
+const PAGE = 60; // cards shown at first; "Mostrar más" adds another batch
+
+function ageOf(birthday) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(birthday || '');
+  if (!m || Number(m[1]) < 1900) return null;
+  const now = new Date();
+  const passed = now.getMonth() + 1 > Number(m[2]) || (now.getMonth() + 1 === Number(m[2]) && now.getDate() >= Number(m[3]));
+  return now.getFullYear() - Number(m[1]) - (passed ? 0 : 1);
+}
+
+function PersonCard({ p, byId, onOpen }) {
+  const a = p.address || {};
+  const address = [a.street, a.city, a.state, a.zip].filter(Boolean).join(', ');
+  const age = ageOf(p.birthday);
+  const family = (p.relatives || [])
+    .map((r) => (byId[r.person] ? `${fullName(byId[r.person])}${r.relationship ? ` (${r.relationship})` : ''}` : null))
+    .filter(Boolean)
+    .join(', ');
+
+  const rows = [];
+  if (p.phone) rows.push(['Teléfono', <a key="t" href={`tel:${p.phone}`} onClick={(e) => e.stopPropagation()}>{p.phone}</a>]);
+  if (address) rows.push(['Dirección', address]);
+  if (p.birthday) rows.push(['Cumpleaños', `${formatDate(p.birthday, { day: 'numeric', month: 'long' })}${age !== null ? ` · ${age} años` : ''}`]);
+  if (p.invitedBy && byId[p.invitedBy]) rows.push(['Invitado por', fullName(byId[p.invitedBy])]);
+  if (family) rows.push(['Familia', family]);
+  if (p.joinedAt) rows.push(['Desde', formatDate(p.joinedAt, { day: 'numeric', month: 'short', year: 'numeric' })]);
+  if (p.notes) rows.push(['Notas', <span key="n" className="clamp2">{p.notes}</span>]);
+
+  return (
+    <article className={`person-card ${p.status === 'inactive' ? 'faded' : ''}`} onClick={onOpen}>
+      <header>
+        <h2>{fullName(p)}</h2>
+        <div className="meta">
+          <span className={`pill ${p.status === 'visitor' ? 'pink' : p.status === 'inactive' ? 'grey' : 'orange'}`}>{STATUS[p.status]}</span>
+          {p.section && <span className="pill">Sección {p.section}</span>}
+        </div>
+      </header>
+      {rows.length ? (
+        <dl>
+          {rows.map(([label, value]) => (
+            <div key={label} className="kv"><dt>{label}</dt><dd>{value}</dd></div>
+          ))}
+        </dl>
+      ) : (
+        <p className="muted small">Todavía no hay más datos. Toca la tarjeta para completarlos.</p>
+      )}
+      <footer><button className="link" onClick={onOpen}>Editar</button></footer>
+    </article>
+  );
+}
 
 export default function People() {
   const { user } = useAuth();
@@ -12,17 +63,33 @@ export default function People() {
   const [search, setSearch] = useState('');
   const [section, setSection] = useState('');
   const [status, setStatus] = useState('');
+  const [limit, setLimit] = useState(PAGE);
   const [editing, setEditing] = useState(null); // null = closed, {} = new, person = edit
   const [error, setError] = useState('');
 
   const load = () => api('/people').then(setPeople).catch((e) => setError(e.message));
   useEffect(() => { load(); }, []);
+  useEffect(() => { setLimit(PAGE); }, [search, section, status]);
 
-  const terms = search.toLowerCase().split(/\s+/).filter(Boolean);
-  const shown = people
-    .filter((p) => (section === '' ? true : section === 'none' ? !p.section : p.section === Number(section)))
-    .filter((p) => !status || p.status === status)
-    .filter((p) => terms.every((t) => `${p.firstName} ${p.lastName} ${p.phone || ''}`.toLowerCase().includes(t)));
+  const byId = useMemo(() => Object.fromEntries(people.map((p) => [p._id, p])), [people]);
+
+  // What the search looks through: name, phone, address and notes.
+  const indexed = useMemo(
+    () => people.map((p) => ({
+      p,
+      hay: plain([p.firstName, p.lastName, p.phone, p.address?.street, p.address?.city, p.address?.state, p.address?.zip, p.notes].join(' ')),
+    })),
+    [people]
+  );
+
+  const shown = useMemo(() => {
+    const terms = plain(search).split(/\s+/).filter(Boolean);
+    return indexed
+      .filter(({ p }) => (section === '' ? true : section === 'none' ? !p.section : p.section === Number(section)))
+      .filter(({ p }) => !status || p.status === status)
+      .filter(({ hay }) => terms.every((t) => hay.includes(t)))
+      .map(({ p }) => p);
+  }, [indexed, search, section, status]);
 
   return (
     <div className="stack">
@@ -31,7 +98,7 @@ export default function People() {
       </PageHeader>
 
       <div className="toolbar wide">
-        <input type="search" placeholder="Buscar nombre o teléfono" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <input type="search" placeholder="Buscar por nombre, teléfono, dirección o notas" value={search} onChange={(e) => setSearch(e.target.value)} />
         <select value={section} onChange={(e) => setSection(e.target.value)} aria-label="Sección">
           <option value="">Todas las secciones</option>
           {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>Sección {n}</option>)}
@@ -44,35 +111,26 @@ export default function People() {
       </div>
       {error && <p className="error">{error}</p>}
 
-      <div className="split people-split">
-        <div className="card flush scroll-x">
-          <table className="table stack">
-            <thead><tr><th>Nombre</th><th>Teléfono</th><th>Sección</th><th>Estado</th></tr></thead>
-            <tbody>
-              {shown.map((p) => (
-                <tr key={p._id} className={editing?._id === p._id ? 'selected' : ''} onClick={() => setEditing(p)}>
-                  <td className="first"><button className="link-name" onClick={() => setEditing(p)}>{fullName(p)}</button></td>
-                  <td className="muted" data-label="Teléfono">{p.phone || '—'}</td>
-                  <td data-label="Sección">{p.section ? `Sección ${p.section}` : '—'}</td>
-                  <td data-label="Estado"><span className={`pill ${p.status === 'visitor' ? 'pink' : p.status === 'inactive' ? 'grey' : ''}`}>{STATUS[p.status]}</span></td>
-                </tr>
-              ))}
-              {!shown.length && <tr><td colSpan="4" className="muted pad">No hay personas con estos filtros.</td></tr>}
-            </tbody>
-          </table>
-        </div>
-
-        {editing && (
-          <PersonForm
-            person={editing}
-            people={people}
-            isAdmin={user?.role === 'admin'}
-            onClose={() => setEditing(null)}
-            onSaved={() => { setEditing(null); load(); }}
-            onDeleted={() => { setEditing(null); load(); }}
-          />
-        )}
+      <div className="people-grid">
+        {shown.slice(0, limit).map((p) => <PersonCard key={p._id} p={p} byId={byId} onOpen={() => setEditing(p)} />)}
       </div>
+      {!shown.length && <p className="card muted">No hay personas con estos filtros.</p>}
+      {shown.length > limit && (
+        <div className="row" style={{ justifyContent: 'center' }}>
+          <button className="ghost" onClick={() => setLimit((l) => l + PAGE)}>Mostrar más ({shown.length - limit} restantes)</button>
+        </div>
+      )}
+
+      {editing && (
+        <PersonForm
+          person={editing}
+          people={people}
+          isAdmin={user?.role === 'admin'}
+          onClose={() => setEditing(null)}
+          onSaved={() => { setEditing(null); load(); }}
+          onDeleted={() => { setEditing(null); load(); }}
+        />
+      )}
     </div>
   );
 }
