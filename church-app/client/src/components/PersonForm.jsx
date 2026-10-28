@@ -15,7 +15,7 @@ const EMPTY = {
 
 // limited: for teachers, who can register a person but can't browse the rest of the people list,
 // so the fields that need that list (invited by, relatives) are left out.
-export default function PersonForm({ person, people = [], onSaved, onClose, onDeleted, isAdmin, limited = false }) {
+export default function PersonForm({ person, people = [], onSaved, onClose, onDeleted, isAdmin, limited = false, defaults = {} }) {
   const editing = !!person?._id;
   const [form, setForm] = useState(EMPTY);
   const [history, setHistory] = useState([]);
@@ -23,7 +23,7 @@ export default function PersonForm({ person, people = [], onSaved, onClose, onDe
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!editing) return setForm(EMPTY);
+    if (!editing) return setForm({ ...EMPTY, joinedAt: toISO(new Date()), ...defaults });
     api(`/people/${person._id}`).then((p) => {
       const a = p.address || {};
       setForm({

@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import Person from '../models/Person.js';
 
 export async function requireAuth(req, res, next) {
   const header = req.headers.authorization || '';
@@ -11,7 +12,7 @@ export async function requireAuth(req, res, next) {
   } catch {
     return res.status(401).json({ error: 'Sesión vencida. Inicia sesión de nuevo' });
   }
-  const u = await User.findById(id).select('name email username role active mustChangePassword passwordChangedAt').lean();
+  const u = await User.findById(id).select('name email username role active mustChangePassword passwordChangedAt person').lean();
   if (!u || !u.active) return res.status(401).json({ error: 'Tu cuenta está desactivada. Habla con un administrador' });
   if (u.passwordChangedAt && iat < Math.floor(u.passwordChangedAt.getTime() / 1000)) {
     return res.status(401).json({ error: 'Tu contraseña cambió. Inicia sesión de nuevo' });
@@ -20,6 +21,10 @@ export async function requireAuth(req, res, next) {
     id: String(u._id), name: u.name, email: u.email, username: u.username || '',
     role: u.role, mustChangePassword: !!u.mustChangePassword,
   };
+  if (u.role === 'leader') {
+    req.user.person = u.person ? String(u.person) : null;
+    req.user.section = u.person ? (await Person.findById(u.person).select('section').lean())?.section ?? null : null;
+  }
   next();
 }
 

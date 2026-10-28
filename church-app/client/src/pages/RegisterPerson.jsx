@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { fullName } from '../api.js';
+import { useAuth } from '../auth.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import PersonForm from '../components/PersonForm.jsx';
 
-// For teachers: add someone new to the database. They can't see or edit the rest of the people list.
+// For teachers and leaders: add someone new to the database. They can't see or edit the rest of the people list.
 export default function RegisterPerson() {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [recent, setRecent] = useState([]);
 
@@ -14,7 +16,7 @@ export default function RegisterPerson() {
         <button className="primary" onClick={() => setOpen(true)}>Persona nueva</button>
       </PageHeader>
       <p className="card muted">
-        Aquí puedes registrar personas nuevas. Después, un administrador puede inscribirlas en un grupo de Escuela de Vida.
+        Aquí puedes registrar personas nuevas. {user.role === 'leader' ? 'Después las agregas a tus reuniones.' : 'Después, un administrador puede inscribirlas en un grupo de Escuela de Vida.'}
         Por privacidad no puedes ver ni editar a las demás personas.
       </p>
       {recent.length > 0 && (

@@ -383,3 +383,45 @@ a.pill.action { background: var(--primary-deep); border-color: var(--primary-dee
 .tile.on .check { background: var(--green); border-color: var(--green); }
 .edit-btn { background: var(--orange); border-color: var(--orange); color: #fff; min-height: 38px; padding: 6px 18px; }
 .edit-btn:hover { background: var(--orange-deep); border-color: var(--orange-deep); }
+
+/* ---------- Sign out in pink ---------- */
+.side-foot .link { color: var(--alert); font-weight: 700; }
+.side-foot .link:hover { background: none; text-decoration: underline; }
+
+/* ---------- Person card: name acts as the heading; no edit button ---------- */
+.person-card h2 .link-name { font: inherit; color: var(--ink); }
+.person-card h2 .link-name:hover { color: var(--primary-deep); background: none; }
+.person-card { padding-bottom: 20px; }
+
+/* ---------- Dashboard line chart: black total, blue members, green new + visitors ---------- */
+.s-total { --c: var(--ink); }
+.s-members { --c: var(--primary); }
+.s-new { --c: var(--green); }
+.chart .line { fill: none; stroke: var(--c); stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+.chart .pt { fill: var(--c); stroke: #fff; stroke-width: 1.5; }
+.chart .pt-label { font-size: 11px; font-weight: 700; fill: var(--ink); }
+.goal-line { stroke: var(--muted); }
+.goal-label { fill: var(--muted); }
+.sw { border-radius: 50%; }
+.sw.total { background: var(--ink); }
+.sw.newvis { background: var(--green); }
+
+/* ---------- Reuniones ---------- */
+.gather-table tbody tr { cursor: pointer; }
+@media (min-width: 1100px) { .gather-split { grid-template-columns: minmax(0, 1fr) 400px; } }
+@media (max-width: 1099px) { .gather-split .side-panel { order: 2; } }
+.rec-list.pad-x { padding: 0 20px 12px; }
+.rec-list li { flex-wrap: wrap; }
+.rec-list .name { display: flex; flex-direction: column; gap: 4px; }
+.rec-list .tgls { flex-wrap: wrap; align-items: center; }
+.pill.green { background: var(--green-soft); color: var(--green); border-color: var(--green-line); }
+
+/* ---------- Dashboard: this week's reuniones ---------- */
+.week-stats { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin: 14px 0; }
+
+/* ---------- Reunión: who holds each role, and the tag chips ---------- */
+.roles-grid { margin: 0; display: grid; gap: 8px 24px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.roles-grid .kv { display: grid; grid-template-columns: 96px 1fr; gap: 10px; }
+.roles-grid dt { color: var(--muted); font-size: 0.82rem; font-weight: 600; padding-top: 2px; }
+.roles-grid dd { margin: 0; overflow-wrap: anywhere; }
+.role-chips { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 0 8px; }

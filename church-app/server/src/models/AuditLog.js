@@ -9,7 +9,7 @@ const auditSchema = new Schema({
   actor: { type: Schema.Types.ObjectId, ref: 'User' }, // empty for unknown people (failed logins)
   actorName: { type: String, default: 'Desconocido' },  // name at the time, so the log stays readable later
   actorRole: String,
-  category: { type: String, enum: ['sesion', 'cuenta', 'usuarios', 'personas', 'asistencia', 'escuela', 'ajustes'], required: true },
+  category: { type: String, enum: ['sesion', 'cuenta', 'usuarios', 'personas', 'asistencia', 'escuela', 'reuniones', 'ajustes'], required: true },
   action: { type: String, required: true },             // machine key, e.g. person.update
   summary: String,                                      // "editó a Juan Pérez"
   details: [String],                                    // e.g. which fields changed (names only, not values)

@@ -10,6 +10,7 @@ const CATEGORIES = {
   personas: 'Personas',
   asistencia: 'Asistencia',
   escuela: 'Escuela de Vida',
+  reuniones: 'Reuniones',
   ajustes: 'Ajustes',
 };
 // Blue = routine, cyan = account/user changes, red = failed sign-ins and blocked accounts.

@@ -12,19 +12,22 @@ import Users from './pages/Users.jsx';
 import Account from './pages/Account.jsx';
 import Activity from './pages/Activity.jsx';
 import RegisterPerson from './pages/RegisterPerson.jsx';
+import Reuniones from './pages/Reuniones.jsx';
+import Reunion from './pages/Reunion.jsx';
 import EscuelaOverview from './pages/escuela/Overview.jsx';
 import EscuelaStudents from './pages/escuela/Students.jsx';
 import Cohort from './pages/escuela/Cohort.jsx';
 
-const ALL = ['admin', 'user', 'teacher'];
+const ALL = ['admin', 'user', 'teacher', 'leader'];
 // Who sees each menu item. Pages enforce the same rules (and the API enforces them again).
 const NAV = [
-  { to: '/', label: 'Resumen', icon: 'home', end: true, roles: ['admin'] },
+  { to: '/', label: 'Dashboard', icon: 'home', end: true, roles: ['admin'] },
   { to: '/asistencia', label: 'Asistencia', icon: 'check', roles: ['admin', 'user'] },
   { to: '/ausentes', label: 'Ausentes', icon: 'alert', roles: ['admin'] },
   { to: '/personas', label: 'Personas', icon: 'people', roles: ['admin', 'user'] },
+  { to: '/reuniones', label: 'Reuniones', icon: 'chat', roles: ['admin', 'leader'] },
   { to: '/escuela', label: 'Escuela de Vida', icon: 'book', roles: ['admin', 'teacher'] },
-  { to: '/registrar', label: 'Registrar persona', icon: 'people', roles: ['teacher'] },
+  { to: '/registrar', label: 'Registrar persona', icon: 'people', roles: ['teacher', 'leader'] },
   { to: '/usuarios', label: 'Usuarios', icon: 'shield', roles: ['admin'] },
   { to: '/actividad', label: 'Actividad', icon: 'log', roles: ['admin'] },
 ];
@@ -102,7 +105,9 @@ export default function App() {
       <Route path="/escuela/grupos/:id" element={<Protected roles={['admin', 'teacher']}><Cohort /></Protected>} />
       <Route path="/usuarios" element={<Protected roles={['admin']}><Users /></Protected>} />
       <Route path="/actividad" element={<Protected roles={['admin']}><Activity /></Protected>} />
-      <Route path="/registrar" element={<Protected roles={['teacher']}><RegisterPerson /></Protected>} />
+      <Route path="/registrar" element={<Protected roles={['teacher', 'leader']}><RegisterPerson /></Protected>} />
+      <Route path="/reuniones" element={<Protected roles={['admin', 'leader']}><Reuniones /></Protected>} />
+      <Route path="/reuniones/:id" element={<Protected roles={['admin', 'leader']}><Reunion /></Protected>} />
       <Route path="/cuenta" element={<Protected><Account /></Protected>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

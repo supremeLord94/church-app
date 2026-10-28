@@ -6,6 +6,7 @@ import Settings from '../models/Settings.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { upcomingBirthdays } from '../birthdays.js';
 import { computeMissing } from '../missing.js';
+import { buildTrend } from '../trend.js';
 
 const router = Router();
 router.use(requireAuth, requireRole('admin'));
@@ -25,17 +26,7 @@ router.get('/overview', async (req, res) => {
   const dates = services.map((s) => s.date);
   const rows = await Attendance.find({ date: { $in: dates } }).populate('person', 'status section joinedAt').lean();
 
-  const byDate = Object.fromEntries(dates.map((d) => [d, { date: d, members: 0, visitors: 0, newPeople: 0 }]));
-  for (const r of rows) {
-    if (!r.person) continue;
-    const row = byDate[r.date];
-    if (r.person.status === 'visitor') row.visitors++;
-    else row.members++;
-    if (r.person.joinedAt === r.date) row.newPeople++;
-  }
-  const trend = dates
-    .map((d) => ({ ...byDate[d], total: byDate[d].members + byDate[d].visitors }))
-    .reverse(); // oldest -> newest for charts
+  const trend = buildTrend(dates, rows); // oldest -> newest for charts
 
   const latestDate = dates[0];
   const members = await Person.find({ status: 'member', joinedAt: { $lte: latestDate } }).select('section').lean();

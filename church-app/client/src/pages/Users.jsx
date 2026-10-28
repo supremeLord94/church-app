@@ -4,6 +4,7 @@ import { useAuth } from '../auth.jsx';
 import { ROLE_LABEL } from '../roles.js';
 import PageHeader from '../components/PageHeader.jsx';
 import UsernameField from '../components/UsernameField.jsx';
+import PersonPicker from '../components/PersonPicker.jsx';
 
 // 12 characters, no look-alike characters (0/O, 1/l/I).
 function generatePassword() {
@@ -15,6 +16,7 @@ function generatePassword() {
 const ROLE_HELP = {
   user: 'Usuario: toma asistencia, registra personas nuevas y edita sus datos',
   teacher: 'Profesor: solo ve los grupos de Escuela de Vida que le asignes; marca asistencia, tareas y si completó el curso',
+  leader: 'Líder: crea reuniones (células y casas de paz) de su sección, agrega personas a ellas y registra personas nuevas',
   admin: 'Administrador: acceso a todo, incluyendo usuarios',
 };
 
@@ -67,16 +69,17 @@ export default function Users() {
   const [dialog, setDialog] = useState(null); // {type:'new'} | {type:'edit', u} | {type:'reset', u}
   const [form, setForm] = useState({});
   const [error, setError] = useState('');
+  const [people, setPeople] = useState([]); // person records, to link a leader to theirs
   const [notice, setNotice] = useState(null); // shown once after create/reset
 
   const load = () => api('/users').then(setUsers).catch((e) => setError(e.message));
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); api('/people').then(setPeople).catch(() => {}); }, []);
 
   const open = (d) => {
     setError('');
     setForm(
-      d.type === 'new' ? { name: '', username: '', email: '', role: 'user', password: generatePassword() }
-      : d.type === 'edit' ? { name: d.u.name, username: d.u.username || '', email: d.u.email, role: d.u.role, active: d.u.active }
+      d.type === 'new' ? { name: '', username: '', email: '', role: 'user', person: '', password: generatePassword() }
+      : d.type === 'edit' ? { name: d.u.name, username: d.u.username || '', email: d.u.email, role: d.u.role, person: d.u.person || '', active: d.u.active }
       : { password: generatePassword() }
     );
     setDialog(d);
@@ -88,7 +91,7 @@ export default function Users() {
     try {
       if (dialog.type === 'new') {
         const u = await api('/users', { method: 'POST', body: form });
-        setNotice({ name: u.name, login: u.username || u.email, password: form.password, what: 'creada', teacher: u.role === 'teacher' });
+        setNotice({ name: u.name, login: u.username || u.email, password: form.password, what: 'creada', teacher: u.role === 'teacher', leader: u.role === 'leader' });
       } else if (dialog.type === 'reset') {
         await api(`/users/${dialog.u._id}/reset-password`, { method: 'POST', body: { password: form.password } });
         setNotice({ name: dialog.u.name, login: dialog.u.username || dialog.u.email, password: form.password, what: 'restablecida' });
@@ -114,6 +117,7 @@ export default function Users() {
             <strong>Cuenta {notice.what} para {notice.name}.</strong>
             <p className="muted">Compárteles esta contraseña temporal. Deberán cambiarla la primera vez que entren. Por seguridad no se vuelve a mostrar.</p>
             <p className="pw">Entra con: {notice.login} · <code>{notice.password}</code></p>
+            {notice.leader && <p className="muted small">Este líder entra directo a Reuniones y solo ve las de su sección.</p>}
             {notice.teacher && <p className="muted small">Para que este profesor vea un grupo, asígnalo desde la página del grupo en Escuela de Vida.</p>}
           </div>
           <div className="row">
@@ -131,8 +135,9 @@ export default function Users() {
               <div className="user-who">
                 <strong>{u.name}</strong>{u._id === me.id && <span className="muted small"> (tú)</span>}
                 <div className="muted small">{u.username ? `${u.username} · ` : ''}{u.email}</div>
+                {u.personName && <div className="muted small">Ficha: {u.personName}</div>}
               </div>
-              <span className={`pill ${u.role === 'admin' ? 'orange' : u.role === 'teacher' ? 'cyan' : ''}`}>{ROLE_LABEL[u.role] || u.role}</span>
+              <span className={`pill ${u.role === 'admin' ? 'orange' : ['teacher', 'leader'].includes(u.role) ? 'cyan' : ''}`}>{ROLE_LABEL[u.role] || u.role}</span>
             </div>
             <div>
               {u.lockedUntil ? <span className="pill pink solid" title="Se desbloquea sola o al restablecer la contraseña">Bloqueado hasta {new Date(u.lockedUntil).toLocaleTimeString('es', { hour: 'numeric', minute: '2-digit' })}</span>
@@ -154,6 +159,12 @@ export default function Users() {
           <label>Correo<input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required /></label>
           <UsernameField value={form.username} onChange={(username) => setForm({ ...form, username })} />
           <RoleSelect value={form.role} onChange={(role) => setForm({ ...form, role })} />
+          {form.role === 'leader' && (
+            <label>Ficha de persona del líder
+              <PersonPicker people={people} value={form.person || ''} onChange={(person) => setForm({ ...form, person })} placeholder="Escribe el nombre del líder" />
+              <span className="small muted">Su sección sale de esta ficha. Solo verá y creará reuniones de esa sección.</span>
+            </label>
+          )}
           <PasswordField value={form.password} onChange={(password) => setForm({ ...form, password })} />
         </Dialog>
       )}
@@ -163,6 +174,12 @@ export default function Users() {
           <label>Correo<input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required /></label>
           <UsernameField value={form.username} onChange={(username) => setForm({ ...form, username })} exceptId={dialog.u._id} />
           <RoleSelect value={form.role} onChange={(role) => setForm({ ...form, role })} />
+          {form.role === 'leader' && (
+            <label>Ficha de persona del líder
+              <PersonPicker people={people} value={form.person || ''} onChange={(person) => setForm({ ...form, person })} placeholder="Escribe el nombre del líder" />
+              <span className="small muted">Su sección sale de esta ficha. Solo verá y creará reuniones de esa sección.</span>
+            </label>
+          )}
           <label className="check-line">
             <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} />
             Cuenta activa (si la desactivas, se le cierra la sesión)

@@ -2,39 +2,56 @@ import { useEffect, useState } from 'react';
 import { api, formatDate } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import PageHeader from '../components/PageHeader.jsx';
+import GatheringMetrics from '../components/GatheringMetrics.jsx';
+
+// Line chart, one point per service: black = total, blue = members who attended, green = new people and visitors.
+const LINES = [
+  { key: 'members', label: 'Miembros que asistieron', cls: 's-members' },
+  { key: 'newOrVisitors', label: 'Nuevos y visitas', cls: 's-new' },
+  { key: 'total', label: 'Total', cls: 's-total' }, // drawn last so the black points sit on top
+];
 
 function TrendChart({ trend, goal }) {
-  const W = 640, H = 200, P = { l: 34, r: 12, t: 14, b: 28 };
-  const max = Math.max(goal, ...trend.map((t) => t.total), 10);
-  const top = Math.ceil(max / 10) * 10;
-  const bw = (W - P.l - P.r) / trend.length;
+  const W = 640, H = 230, P = { l: 40, r: 26, t: 22, b: 30 };
+  const max = Math.max(goal, 1, ...trend.flatMap((t) => [t.total, t.members, t.newOrVisitors]));
+  const step = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500].find((s) => max / s <= 5) || 1000;
+  const top = Math.ceil(max / step) * step;
+  const ticks = Array.from({ length: top / step + 1 }, (_, i) => i * step);
+  const n = trend.length;
+  const x = (i) => P.l + (n === 1 ? (W - P.l - P.r) / 2 : (i * (W - P.l - P.r)) / (n - 1));
   const y = (v) => H - P.b - (v / top) * (H - P.t - P.b);
+  const path = (key) => trend.map((t, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(t[key]).toFixed(1)}`).join(' ');
+
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Asistencia por domingo" className="chart">
-      {[0, 0.5, 1].map((f) => (
-        <g key={f}>
-          <line x1={P.l} x2={W - P.r} y1={y(top * f)} y2={y(top * f)} className="grid-line" />
-          <text x={P.l - 6} y={y(top * f) + 4} textAnchor="end" className="axis">{Math.round(top * f)}</text>
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Asistencia por domingo: total, miembros que asistieron, y nuevos y visitas" className="chart">
+      {ticks.map((v) => (
+        <g key={v}>
+          <line x1={P.l} x2={W - P.r} y1={y(v)} y2={y(v)} className="grid-line" />
+          <text x={P.l - 8} y={y(v) + 4} textAnchor="end" className="axis">{v}</text>
         </g>
       ))}
-      {trend.map((t, i) => {
-        const x = P.l + i * bw + bw * 0.18;
-        const w = bw * 0.64;
-        return (
-          <g key={t.date}>
-            <rect x={x} y={y(t.members)} width={w} height={H - P.b - y(t.members)} className="bar-members" />
-            <rect x={x} y={y(t.total)} width={w} height={y(t.members) - y(t.total)} className="bar-visitors" />
-            <text x={x + w / 2} y={y(t.total) - 4} textAnchor="middle" className="axis">{t.total}</text>
-            <text x={x + w / 2} y={H - 10} textAnchor="middle" className="axis">{formatDate(t.date, { day: 'numeric', month: 'numeric' })}</text>
-          </g>
-        );
-      })}
       {goal > 0 && (
         <g>
           <line x1={P.l} x2={W - P.r} y1={y(goal)} y2={y(goal)} className="goal-line" />
           <text x={W - P.r} y={y(goal) - 5} textAnchor="end" className="goal-label">Meta {goal}</text>
         </g>
       )}
+      {LINES.map((s) => (
+        <g key={s.key} className={s.cls}>
+          <path d={path(s.key)} className="line" />
+          {trend.map((t, i) => (
+            <circle key={t.date} cx={x(i)} cy={y(t[s.key])} r="4.5" className="pt">
+              <title>{`${formatDate(t.date, { day: 'numeric', month: 'short' })}: ${s.label} ${t[s.key]}`}</title>
+            </circle>
+          ))}
+        </g>
+      ))}
+      {trend.map((t, i) => (
+        <g key={t.date}>
+          <text x={x(i)} y={y(t.total) - 10} textAnchor="middle" className="pt-label">{t.total}</text>
+          <text x={x(i)} y={H - 10} textAnchor="middle" className="axis">{formatDate(t.date, { day: 'numeric', month: 'numeric' })}</text>
+        </g>
+      ))}
     </svg>
   );
 }
@@ -92,8 +109,9 @@ export default function Dashboard() {
   if (!data) return <p className="muted">Cargando…</p>;
   if (!data.latest) return (
     <div className="stack">
-      <PageHeader title="Resumen" />
+      <PageHeader title="Dashboard" />
       <p className="card">Todavía no hay domingos registrados. Agrega a tu gente en Personas y luego toma asistencia.</p>
+      <GatheringMetrics />
       <Birthdays list={data.birthdays || []} />
     </div>
   );
@@ -103,7 +121,7 @@ export default function Dashboard() {
 
   return (
     <div className="stack">
-      <PageHeader title="Resumen" sub={`Último domingo registrado: ${formatDate(latest.date)}`}>
+      <PageHeader title="Dashboard" sub={`Último domingo registrado: ${formatDate(latest.date)}`}>
         {user.role === 'admin' && (
           <form className="inline-form" onSubmit={saveGoal}>
             <label className="inline">Meta de asistencia
@@ -131,7 +149,7 @@ export default function Dashboard() {
       <section className="card">
         <h2>Últimos {trend.length} domingos</h2>
         <TrendChart trend={trend} goal={goal} />
-        <p className="legend"><span className="sw members" /> Miembros <span className="sw visitors" /> Visitas</p>
+        <p className="legend"><span className="sw total" /> Total <span className="sw members" /> Miembros que asistieron <span className="sw newvis" /> Nuevos y visitas</p>
       </section>
 
       <section className="card">
@@ -150,6 +168,7 @@ export default function Dashboard() {
         </ul>
       </section>
       </div>
+      <GatheringMetrics />
       <Birthdays list={data.birthdays || []} />
     </div>
   );

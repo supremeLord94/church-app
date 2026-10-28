@@ -17,6 +17,8 @@ import usersRoutes from './routes/users.js';
 import escuelaRoutes from './routes/escuela.js';
 import User from './models/User.js';
 import activityRoutes from './routes/activity.js';
+import gatheringRoutes from './routes/gatherings.js';
+import { migrateGatheringRoles } from './migrations.js';
 
 const app = express();
 app.disable('x-powered-by');
@@ -40,6 +42,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/escuela', escuelaRoutes);
 app.use('/api/activity', activityRoutes);
+app.use('/api/gatherings', gatheringRoutes);
 
 app.use((err, _req, res, _next) => {
   if (err.name === 'ValidationError') return res.status(400).json({ error: `Datos inválidos: ${err.message}` });
@@ -53,6 +56,7 @@ const port = process.env.PORT || 5000;
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => User.updateMany({ role: 'secretary' }, { $set: { role: 'user' } })) // old role name
+  .then(() => migrateGatheringRoles()) // old leader/host flags -> role tags
   .then(() => app.listen(port, () => console.log(`API en http://localhost:${port}`)))
   .catch((e) => {
     console.error('No se pudo conectar a MongoDB', e);

@@ -8,7 +8,7 @@ import { audit } from '../audit.js';
 const router = Router();
 router.use(requireAuth);
 const staff = requireRole('admin', 'user'); // browse and edit people
-const canRegister = requireRole('admin', 'user', 'teacher'); // add a new person
+const canRegister = requireRole('admin', 'user', 'teacher', 'leader'); // add a new person
 
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 import { today } from '../util.js';

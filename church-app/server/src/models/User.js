@@ -10,7 +10,9 @@ const userSchema = new mongoose.Schema(
     // admin: everything.
     // user ("usuario"): take attendance, register people, edit people.
     // teacher ("profesor"): only the Escuela de Vida groups they are assigned to.
-    role: { type: String, enum: ['admin', 'user', 'teacher'], default: 'user' },
+    role: { type: String, enum: ['admin', 'user', 'teacher', 'leader'], default: 'user' },
+    // leader ("líder"): runs células and casas de paz of their own section; needs a person record (their section comes from it)
+    person: { type: mongoose.Schema.Types.ObjectId, ref: 'Person' },
     active: { type: Boolean, default: true },
     // Set when an admin creates the account or resets the password.
     mustChangePassword: { type: Boolean, default: false },

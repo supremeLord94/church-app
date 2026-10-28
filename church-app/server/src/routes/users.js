@@ -3,23 +3,27 @@ import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { audit } from '../audit.js';
-import { ROLE_LABEL } from '../util.js';
+import { ROLE_LABEL, isId } from '../util.js';
+import Person from '../models/Person.js';
 import { emailProblem, normEmail, normUsername, usernameProblem } from '../userChecks.js';
 
 const router = Router();
 router.use(requireAuth, requireRole('admin'));
 
-const ROLES = ['admin', 'user', 'teacher'];
+const ROLES = ['admin', 'user', 'teacher', 'leader'];
+const LEADER_PERSON_ERROR = 'Elige la ficha de persona de este líder. De ahí sale su sección';
 const view = (u) => ({
   _id: u._id, name: u.name, email: u.email, username: u.username || '', role: u.role, active: u.active,
   mustChangePassword: !!u.mustChangePassword, createdAt: u.createdAt,
   lockedUntil: u.lockedUntil && u.lockedUntil > new Date() ? u.lockedUntil : null,
+  person: u.person?._id ?? u.person ?? null,
+  personName: u.person?.firstName ? `${u.person.firstName} ${u.person.lastName}` : null,
 });
 const validPassword = (p) => typeof p === 'string' && p.length >= 8 && p.length <= 128;
 const PW_ERROR = 'La contraseña debe tener entre 8 y 128 caracteres';
 
 router.get('/', async (_req, res) => {
-  const users = await User.find().sort({ name: 1 }).lean();
+  const users = await User.find().sort({ name: 1 }).populate('person', 'firstName lastName').lean();
   res.json(users.map(view));
 });
 
@@ -36,9 +40,15 @@ router.post('/', async (req, res) => {
     if (p) return res.status(409).json({ error: p });
   }
   if (!validPassword(password)) return res.status(400).json({ error: PW_ERROR });
+  const newRole = ROLES.includes(role) ? role : 'user';
+  let person;
+  if (newRole === 'leader') {
+    if (!isId(req.body.person) || !(await Person.exists({ _id: req.body.person }))) return res.status(400).json({ error: LEADER_PERSON_ERROR });
+    person = req.body.person;
+  }
 
   const user = await User.create({
-    name, email, username: username || undefined, role: ROLES.includes(role) ? role : 'user',
+    name, email, username: username || undefined, role: newRole, person,
     passwordHash: await bcrypt.hash(password, 10), mustChangePassword: true,
   });
   await audit(req, {
@@ -58,6 +68,12 @@ router.put('/:id', async (req, res) => {
 
   const newRole = ROLES.includes(role) ? role : user.role;
   const newActive = active ?? user.active;
+  if (req.body.person !== undefined) {
+    if (req.body.person === '' || req.body.person === null) user.person = undefined;
+    else if (isId(req.body.person) && (await Person.exists({ _id: req.body.person }))) user.person = req.body.person;
+    else return res.status(400).json({ error: LEADER_PERSON_ERROR });
+  }
+  if (newRole === 'leader' && !user.person) return res.status(400).json({ error: LEADER_PERSON_ERROR });
   const losesAdmin = user.role === 'admin' && user.active && (newRole !== 'admin' || !newActive);
   if (losesAdmin) {
     if (String(user._id) === req.user.id) {

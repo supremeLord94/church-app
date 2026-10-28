@@ -24,6 +24,10 @@ To open it from a phone or iPad on the same Wi-Fi, just use the `Network:` addre
 
 If you used an earlier version, existing "secretary" accounts are converted to the new "usuario" role automatically the first time the API starts.
 
+## Putting it online
+
+See [DEPLOY.md](DEPLOY.md) for step-by-step instructions to run everything on one Ubuntu server: nginx with HTTPS, Node under systemd, MongoDB on the same machine, and backups.
+
 ## Branding
 
 The name, logo and colors can be changed in three places: the name in `client/src/App.jsx` and `client/src/pages/Login.jsx`, the logo files in `client/public/` (`logo.png`, `favicon.png`), and the color variables at the top of `client/src/styles.css`.
@@ -34,6 +38,7 @@ The name, logo and colors can be changed in three places: the name in `client/sr
 |---|---|
 | **Administrador** | Everything: dashboard, attendance, people, Escuela de Vida (groups, students, teachers), users |
 | **Usuario** | Take attendance, register new people, edit a person's info. Nothing else. |
+| **Líder** | Only the **Reuniones** page: create células and casas de paz for their own section, add people to them, tag who leads and who hosts, and register new people. Plus their own account page. An admin links each leader's login to their person record (that is where their section comes from). |
 | **Profesor** | Only the Escuela de Vida groups an admin assigned to them: record attendance and homework, and decide whether each student completed the course. They can also register new people (**Registrar persona**) and add people to their own groups (existing people, or someone they just registered, who is added to the group automatically). They cannot see or edit the people list, and when adding someone to a group they only see names, section and status, never phone, address or birthday. Removing a student from a group stays with admins. Plus their own account page. |
 
 Every user (any role) can change their own name, username, email and password in **Mi cuenta**. Permissions are enforced by the API, not just hidden in the menu.
@@ -55,8 +60,8 @@ Users can sign in with their **email or their username**. A username is optional
 - Sections 1-5 are a field on each person. Status: `visitor`, `member` (counted in "who is missing"), `inactive` (hidden from check-in).
 - A Sunday is created the first time someone is marked present. "Missing" means active members who were not marked.
 - **Personas** opens the person form as a centered window. City and state are prefilled with Tijuana / BC when empty (`DEFAULT_CITY` and `DEFAULT_STATE` in `client/src/components/PersonForm.jsx`). Name and phone fields ask the browser not to autofill. Registering someone with the same first and last name as an existing person asks for confirmation first.
-- **Resumen** also lists everyone with a birthday in the next 4 weeks.
-- **Ausentes** lists every member who missed at least one service in the last 6 weeks (the 6 weeks ending at the most recent recorded service). Every missed service counts, in a row or not, and a person is only counted from their first counted Sunday. Most missed first, with how many services they attended. **Crítico** (pink) = 4 or more missed, **Baja** (orange-yellow) = 2 or 3, no tag for 1. Thresholds are `CRITICAL_AT` and `LOW_AT` in `server/src/missing.js`. **Resumen** shows totals, a 12-week chart with the goal, and a per-section breakdown (admin only).
+- **Dashboard** also lists everyone with a birthday in the next 4 weeks.
+- **Ausentes** lists every member who missed at least one service in the last 6 weeks (the 6 weeks ending at the most recent recorded service). Every missed service counts, in a row or not, and a person is only counted from their first counted Sunday. Most missed first, with how many services they attended. **Crítico** (pink) = 4 or more missed, **Baja** (orange-yellow) = 2 or 3, no tag for 1. Thresholds are `CRITICAL_AT` and `LOW_AT` in `server/src/missing.js`. **Dashboard** shows totals, a 12-week line chart with the goal (black: everyone present, blue: members who attended, green: new people and visitors), and a per-section breakdown (admin only).
 
 ## Escuela de Vida
 
@@ -66,6 +71,18 @@ Users can sign in with their **email or their username**. A username is optional
 - **At risk**: an active student is flagged after **3 classes in a row without attending, or 3 classes in a row without turning in homework** (`RISK = 3` in `server/src/routes/escuela.js` and `client/src/escuela.js`).
 - **Stages** (admin, Alumnos tab): Terminó la escuela, En curso, Se detuvo, No ha empezado. "Registrar curso previo" records a course finished before using the app.
 - **Teachers** see only "Mis grupos" and the at-risk students inside them. Only admins create groups, enroll students and assign teachers.
+
+## Reuniones (células and casas de paz)
+
+- A **reunión** is either a **célula** or a **casa de paz**. For a casa de paz you type the class number, 1 to 9 (only those digits are accepted). Each one has a date, optional time and place, and a section.
+- **Leaders** (role Líder) see and create reuniones for **their own section** only, so a leader and spouse with separate logins share the same ones. They are linked to a person record by an admin (Usuarios), and that record's section is theirs.
+- The person who creates a reunión is **tagged as its leader automatically**. Tags belong to that reunión only, so the next one can have different people.
+- **Tags in a célula:** Líder, Sublíder, Anfitrión, Palabra, Alabanzas, Oración and Ofrendas. **Líder, Sublíder, Anfitrión, Palabra and Alabanzas are held by one person**: tagging someone else moves the tag from whoever had it. **Oración and Ofrendas** can be given to several people. One person can have several tags. The leader tag can only be moved, never removed, so a reunión always has a leader (which also means the leader can't be removed from the list).
+- **Tags in a casa de paz:** only Líder and Anfitrión (one person each).
+- The reunión page shows a **Responsables** box with who holds each tag. Roles are defined in `server/src/gatheringRoles.js` (and mirrored in `client/src/gatherings.js`).
+- **Adding people:** search by name and filter by section (the reunión's own section is selected by default). Only names, section and status are shown to leaders, never phone or address. "Registrar persona nueva" creates the person and adds them (as a visita in a casa de paz).
+- **Admins** see every section. The numbers live on the **Dashboard**, not on the Reuniones page: this week's reuniones (Monday to Sunday: how many células and casas de paz, how many people, by section) and the last 4 weeks per section and per leader. Leaders don't see those numbers, only the reuniones of their own section. A section with no casas de paz is flagged **Sin casas de paz**, and one with fewer than half of the most active section is **Atrasada** (`gatheringStats.js`).
+- Everything is recorded in **Actividad** under Reuniones.
 
 ## Sign-in protection and security
 

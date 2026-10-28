@@ -37,7 +37,7 @@ function PersonCard({ p, byId, onOpen }) {
   return (
     <article className={`person-card ${p.status === 'inactive' ? 'faded' : ''}`} onClick={onOpen}>
       <header>
-        <h2>{fullName(p)}</h2>
+        <h2><button className="link-name" onClick={onOpen}>{fullName(p)}</button></h2>
         <div className="meta">
           <span className={`pill ${p.status === 'visitor' ? 'cyan' : p.status === 'inactive' ? 'grey' : 'orange'}`}>{STATUS[p.status]}</span>
           {p.section && <span className="pill">Sección {p.section}</span>}
@@ -52,7 +52,6 @@ function PersonCard({ p, byId, onOpen }) {
       ) : (
         <p className="muted small">Todavía no hay más datos. Toca la tarjeta para completarlos.</p>
       )}
-      <footer><button className="edit-btn" onClick={onOpen}>Editar</button></footer>
     </article>
   );
 }
