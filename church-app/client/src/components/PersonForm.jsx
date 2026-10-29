@@ -9,7 +9,7 @@ export const DEFAULT_STATE = 'BC';
 
 const EMPTY = {
   firstName: '', lastName: '', phone: '', birthday: '', section: '', status: 'member',
-  invitedBy: '', joinedAt: toISO(new Date()), notes: '',
+  invitedBy: '', joinedAt: toISO(new Date()), notes: '', baptized: false, macroencuentro: false,
   address: { street: '', city: DEFAULT_CITY, state: DEFAULT_STATE, zip: '' }, relatives: [],
 };
 
@@ -29,6 +29,8 @@ export default function PersonForm({ person, people = [], onSaved, onClose, onDe
       setForm({
         ...EMPTY, ...p,
         section: p.section || '',
+        baptized: !!p.baptized,
+        macroencuentro: !!p.macroencuentro,
         invitedBy: p.invitedBy?._id || '',
         address: { street: a.street || '', city: a.city || DEFAULT_CITY, state: a.state || DEFAULT_STATE, zip: a.zip || '' },
         relatives: (p.relatives || []).map((r) => ({ person: r.person?._id || '', relationship: r.relationship || '' })),
@@ -38,6 +40,7 @@ export default function PersonForm({ person, people = [], onSaved, onClose, onDe
   }, [person?._id]); // eslint-disable-line
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const setYesNo = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value === 'yes' }));
   const setAddr = (k) => (e) => setForm((f) => ({ ...f, address: { ...f.address, [k]: e.target.value } }));
   const setRel = (i, patch) =>
     setForm((f) => ({ ...f, relatives: f.relatives.map((r, j) => (j === i ? { ...r, ...patch } : r)) }));
@@ -97,6 +100,18 @@ export default function PersonForm({ person, people = [], onSaved, onClose, onDe
               <option value="visitor">Visita</option>
               <option value="member">Miembro</option>
               <option value="inactive">Inactivo</option>
+            </select>
+          </label>
+          <label>Bautizado
+            <select value={form.baptized ? 'yes' : 'no'} onChange={setYesNo('baptized')}>
+              <option value="no">No</option>
+              <option value="yes">Sí</option>
+            </select>
+          </label>
+          <label>Macroencuentro
+            <select value={form.macroencuentro ? 'yes' : 'no'} onChange={setYesNo('macroencuentro')}>
+              <option value="no">No</option>
+              <option value="yes">Sí</option>
             </select>
           </label>
         </div>

@@ -12,6 +12,9 @@ const PATHS = {
   chat: 'M4 4h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H9l-4 3v-3H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zM7 8h6M7 11h4',
   log: 'M6 3h8a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM8 7h4M8 10h4M8 13h2',
   close: 'M5 5l10 10M15 5L5 15',
+  addEdit: 'M11 5l4 4M11 5l-7 7v4h4l7-7M15 15h4M17 13v4',
+  undo: 'M8 6H13a5 5 0 010 10H6M10 3L6 6l4 3',
+ 
 };
 
 export default function Icon({ name }) {

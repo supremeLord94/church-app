@@ -135,7 +135,7 @@ export default function Reuniones() {
                 <tr key={g._id} onClick={() => navigate(`/reuniones/${g._id}`)}>
                   <td className="first"><strong>{formatDate(g.date, { weekday: 'short', day: 'numeric', month: 'short' })}</strong>{g.time && <span className="muted"> · {g.time}</span>}</td>
                   <td data-label="Tipo"><span className={`pill ${typePill(g)}`}>{typeTitle(g)}</span></td>
-                  <td data-label="Sección">Sección {g.section}</td>
+                  <td data-label="Sección">{g.section}</td>
                   <td data-label="Líder">{g.leaders.join(', ') || '—'}</td>
                   <td data-label="Anfitrión">{g.hosts.join(', ') || '—'}</td>
                   <td data-label="Lugar" className="muted">{g.place || '—'}</td>

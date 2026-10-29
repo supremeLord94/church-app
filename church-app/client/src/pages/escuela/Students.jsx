@@ -4,6 +4,8 @@ import PageHeader from '../../components/PageHeader.jsx';
 import EscuelaTabs from '../../components/EscuelaTabs.jsx';
 import { COURSES, RISK, STAGES, STAGE_ORDER, courseLabel } from '../../escuela.js';
 
+import Icon from '../../components/Icon.jsx';
+
 const pctOf = (n, d) => (d ? Math.round((n / d) * 100) : null);
 
 export default function Students() {
@@ -13,8 +15,8 @@ export default function Students() {
   const [stage, setStage] = useState('');
   const [section, setSection] = useState('');
   const [past, setPast] = useState(null); // row for the "past course" dialog
-  const [undo, setUndo] = useState(null);
   const [pastCourse, setPastCourse] = useState('abc');
+  const [undo, setUndo] = useState(null); // row for the "undo a past course" dialog
 
   const load = () => api('/escuela/students').then(setRows).catch((e) => setError(e.message));
   useEffect(() => { load(); }, []);
@@ -57,6 +59,7 @@ export default function Students() {
 
   return (
     <div className="stack">
+      <Icon name="addEdit" /><Icon name="undo" />
       <PageHeader title="Escuela de Vida" sub="Progreso de cada persona en los cuatro cursos." />
       <EscuelaTabs />
 
@@ -113,9 +116,11 @@ export default function Students() {
                   <td data-label="Sección">{r.section ? `${r.section}` : '—'}</td>
                   <td className="actions">
                     {r.stage !== 'graduated' && (
-                      <button className="link" onClick={() => { setPast(r); setPastCourse(COURSES.find((c) => !r.completedCourses.includes(c.id))?.id || 'abc'); }}>add</button>
+                      <button className="link" onClick={() => { setPast(r); setPastCourse(COURSES.find((c) => !r.completedCourses.includes(c.id))?.id || 'abc'); }}><Icon name="addEdit" /></button>
                     )}
-                    {r.manualCourses.length > 0 && <button className="link" onClick={() => setUndo(r)}>undo</button>}
+                    {
+                    }
+                    {r.manualCourses.length > 0 && <button className="link" onClick={() => setUndo(r)}><Icon name="undo" /></button>}
                   </td>
                 </tr>
               );
@@ -140,6 +145,7 @@ export default function Students() {
           </form>
         </div>
       )}
+
       {undo && (
         <div className="drawer centered" role="dialog" aria-modal="true">
           <div className="sheet narrow">

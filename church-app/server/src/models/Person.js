@@ -28,6 +28,9 @@ const personSchema = new Schema(
     // First Sunday we count them. Missed services before this date are ignored.
     joinedAt: { type: String, match: /^\d{4}-\d{2}-\d{2}$/ },
     notes: String,
+    // Simple yes/no. People saved before these existed have no value, which counts as "no".
+    baptized: { type: Boolean, default: false },
+    macroencuentro: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

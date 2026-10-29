@@ -16,15 +16,17 @@ import { today } from '../util.js';
 const FIELD_LABELS = {
   firstName: 'nombre', lastName: 'apellido', phone: 'teléfono', address: 'dirección', birthday: 'cumpleaños',
   section: 'sección', invitedBy: 'invitado por', relatives: 'familiares', status: 'estado',
-  joinedAt: 'primer domingo contado', notes: 'notas',
+  joinedAt: 'primer domingo contado', notes: 'notas', baptized: 'bautismo', macroencuentro: 'macroencuentro',
 };
 const STATUS_ES = { visitor: 'Visita', member: 'Miembro', inactive: 'Inactivo' };
+const YES_NO = ['baptized', 'macroencuentro'];
 const norm = (k, v) =>
   k === 'address' ? ['street', 'city', 'state', 'zip'].map((f) => v?.[f] || '').join('|')
   : k === 'relatives' ? (v || []).map((r) => `${r.person}:${r.relationship || ''}`).join(',')
+  : YES_NO.includes(k) ? (v ? 'yes' : 'no') // a missing value counts as "no"
   : String(v ?? '');
 
-// Which fields changed, as readable labels. Values are only included for status and section.
+// Which fields changed, as readable labels. Values are only included for status, section and the yes/no fields.
 function diffPerson(before, after) {
   if (!before) return [];
   const out = [];
@@ -32,6 +34,7 @@ function diffPerson(before, after) {
     if (norm(k, before[k]) === norm(k, after[k])) continue;
     if (k === 'status') out.push(`estado: ${STATUS_ES[before.status]} → ${STATUS_ES[after.status]}`);
     else if (k === 'section') out.push(`sección: ${before.section || 'ninguna'} → ${after.section || 'ninguna'}`);
+    else if (YES_NO.includes(k)) out.push(`${FIELD_LABELS[k]}: ${before[k] ? 'Sí' : 'No'} → ${after[k] ? 'Sí' : 'No'}`);
     else out.push(FIELD_LABELS[k]);
   }
   return out;
@@ -43,6 +46,7 @@ const pick = (b) => {
   for (const k of ['firstName', 'lastName', 'phone', 'address', 'birthday', 'section', 'invitedBy', 'relatives', 'status', 'joinedAt', 'notes']) {
     if (b[k] !== undefined) out[k] = b[k] === '' ? undefined : b[k];
   }
+  for (const k of YES_NO) if (typeof b[k] === 'boolean') out[k] = b[k];
   return out;
 };
 
@@ -116,7 +120,7 @@ router.put('/:id', staff, async (req, res) => {
   if (!person) return res.status(404).json({ error: 'Persona no encontrada' });
   const changed = diffPerson(before, person.toObject());
   if (changed.length) {
-    // Field names only (and status/section, which aren't private). Phone and address values are never stored.
+    // Field names only (and status/section/yes-no, which aren't private). Phone and address values are never stored.
     await audit(req, {
       category: 'personas', action: 'person.update', summary: `editó a ${person.firstName} ${person.lastName}`, details: changed,
       target: { type: 'persona', id: person._id, label: `${person.firstName} ${person.lastName}` },

@@ -132,6 +132,7 @@ router.delete('/completions', adminOnly, async (req, res) => {
   });
   res.json({ ok: true });
 });
+
 // ---------- groups ----------
 
 router.get('/cohorts', async (req, res) => {

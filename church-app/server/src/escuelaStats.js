@@ -71,7 +71,7 @@ export function buildRows({ people, enrollments, lessons, records }) {
       memberStatus: p.status,
       stage: graduated ? 'graduated' : active ? 'in_progress' : es.length ? 'stalled' : 'not_started',
       completedCourses: completed,
-      manualCourses: es.filter((e) => !e.cohort && e.status === 'completed').map((e) => e.course),
+      manualCourses: es.filter((e) => !e.cohort && e.status === 'completed').map((e) => e.course), // registered by hand, can be undone
       currentCourse: active?.course || null,
       lastCourse: focus?.course || null,
       lastCourseStatus: focus?.status || null,
