@@ -411,9 +411,6 @@ a.pill.action { background: var(--primary-deep); border-color: var(--primary-dee
 @media (min-width: 1100px) { .gather-split { grid-template-columns: minmax(0, 1fr) 400px; } }
 @media (max-width: 1099px) { .gather-split .side-panel { order: 2; } }
 .rec-list.pad-x { padding: 0 20px 12px; }
-.rec-list li { flex-wrap: wrap; }
-.rec-list .name { display: flex; flex-direction: column; gap: 4px; }
-.rec-list .tgls { flex-wrap: wrap; align-items: center; }
 .pill.green { background: var(--green-soft); color: var(--green); border-color: var(--green-line); }
 
 /* ---------- Dashboard: this week's reuniones ---------- */
@@ -425,3 +422,25 @@ a.pill.action { background: var(--primary-deep); border-color: var(--primary-dee
 .roles-grid dt { color: var(--muted); font-size: 0.82rem; font-weight: 600; padding-top: 2px; }
 .roles-grid dd { margin: 0; overflow-wrap: anywhere; }
 .role-chips { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 0 8px; }
+
+/* ---------- Reunión: person cards colored by section, icon buttons, long names wrap ---------- */
+.sec-0 { --sec: #a8b6d8; } .sec-1 { --sec: #526bff; } .sec-2 { --sec: #14a8d4; }
+.sec-3 { --sec: #1fa36b; } .sec-4 { --sec: #8b5cf6; } .sec-5 { --sec: #e8742a; }
+.pill.sec { background: color-mix(in srgb, var(--sec) 14%, #fff); color: color-mix(in srgb, var(--sec) 62%, #000); border-color: color-mix(in srgb, var(--sec) 40%, #fff); }
+.sec-card { background: var(--surface); border: 1px solid var(--line); border-left: 6px solid var(--sec); border-radius: 12px; }
+.sec-card.result { background: color-mix(in srgb, var(--sec) 9%, #fff); }
+.person-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.person-list.pad-x { padding: 0 20px 14px; }
+.person-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; align-items: center; padding: 10px 12px; }
+.person-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.person-name { font-weight: 600; overflow-wrap: anywhere; }
+.row-actions { display: flex; gap: 8px; flex: none; }
+.person-row .role-chips { grid-column: 1 / -1; }
+.icon-btn { display: grid; place-items: center; width: 42px; height: 42px; min-height: 0; padding: 0; border-radius: 10px; }
+.icon-btn .icon { width: 22px; height: 22px; }
+.icon-btn.add { background: var(--primary); border-color: var(--primary); color: #fff; }
+.icon-btn.add:hover { background: var(--primary-deep); border-color: var(--primary-deep); }
+.icon-btn.remove { background: var(--alert-soft); border-color: #f9c0d4; color: var(--alert); }
+.icon-btn.remove:hover { background: var(--alert); border-color: var(--alert); color: #fff; }
+.icon-btn.tags { background: var(--accent-soft); border-color: #bde7f4; color: var(--accent-deep); }
+.icon-btn.tags:hover, .icon-btn.tags[aria-expanded='true'] { background: var(--accent-deep); border-color: var(--accent-deep); color: #fff; }

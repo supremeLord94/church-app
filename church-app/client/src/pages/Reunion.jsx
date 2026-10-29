@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api, formatDate, fullName } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { roleOf, rolesFor, typePill, typeTitle } from '../gatherings.js';
+import Icon from '../components/Icon.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import PersonForm from '../components/PersonForm.jsx';
 
@@ -127,24 +128,25 @@ export default function Reunion() {
               <h2>Quién estuvo</h2>
               <span className="muted small">Toca “Etiquetas” para asignar un papel en esta reunión</span>
             </div>
-            <ul className="rec-list pad-x">
+            <ul className="person-list pad-x">
               {people.map((p) => {
                 const open = openId === p.person._id;
+                const name = fullName(p.person);
                 return (
-                  <li key={p.person._id}>
-                    <span className="name">
-                      {fullName(p.person)}
+                  <li key={p.person._id} className={`person-row sec-card sec-${p.person.section || 0}`}>
+                    <div className="person-main">
+                      <span className="person-name">{name}</span>
                       <span className="meta">
                         {p.roles.map((r) => <span key={r} className={`pill ${roleOf[r]?.pill}`}>{roleOf[r]?.label}</span>)}
-                        {p.person.section && p.person.section !== g.section && <span className="pill">Sección {p.person.section}</span>}
+                        {p.person.section && p.person.section !== g.section && <span className={`pill sec sec-${p.person.section}`}>Sección {p.person.section}</span>}
                       </span>
-                    </span>
-                    <span className="tgls">
-                      <button className="ghost" aria-expanded={open} onClick={() => setOpenId(open ? null : p.person._id)}>Etiquetas</button>
-                      <button className="link" onClick={() => remove(p)}>Quitar</button>
-                    </span>
+                    </div>
+                    <div className="row-actions">
+                      <button className="icon-btn tags" aria-label={`Etiquetas de ${name}`} title="Etiquetas" aria-expanded={open} onClick={() => setOpenId(open ? null : p.person._id)}><Icon name="tag" /></button>
+                      <button className="icon-btn remove" aria-label={`Quitar a ${name} de la reunión`} title="Quitar de la reunión" onClick={() => remove(p)}><Icon name="minus" /></button>
+                    </div>
                     {open && (
-                      <div className="role-chips" role="group" aria-label={`Etiquetas de ${fullName(p.person)}`}>
+                      <div className="role-chips" role="group" aria-label={`Etiquetas de ${name}`}>
                         {tags.map((r) => {
                           const on = has(p, r.key);
                           const other = r.single && !on ? holders(r.key)[0] : null; // someone else holds it: tapping moves it
@@ -176,17 +178,19 @@ export default function Reunion() {
           {(q.trim() || section) && (
             <>
               <p className="muted small">{found.total} {found.total === 1 ? 'persona' : 'personas'}{found.total > found.people.length ? ` (mostrando ${found.people.length}; escribe más del nombre para acotar)` : ''}</p>
-              <ul className="rec-list">
+              <ul className="person-list">
                 {found.people.map((p) => (
-                  <li key={p._id}>
-                    <span className="name">
-                      {fullName(p)}
+                  <li key={p._id} className={`person-row sec-card result sec-${p.section || 0}`}>
+                    <div className="person-main">
+                      <span className="person-name">{fullName(p)}</span>
                       <span className="meta">
-                        {p.section && <span className="pill">Sección {p.section}</span>}
+                        {p.section ? <span className={`pill sec sec-${p.section}`}>Sección {p.section}</span> : <span className="pill">Sin sección</span>}
                         {p.status === 'visitor' && <span className="pill cyan">Visita</span>}
                       </span>
-                    </span>
-                    <button className="ghost" onClick={() => add(p._id)}>Agregar</button>
+                    </div>
+                    <div className="row-actions">
+                      <button className="icon-btn add" aria-label={`Agregar a ${fullName(p)}`} title="Agregar a la reunión" onClick={() => add(p._id)}><Icon name="plus" /></button>
+                    </div>
                   </li>
                 ))}
               </ul>

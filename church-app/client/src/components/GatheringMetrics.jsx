@@ -1,14 +1,9 @@
 import { useEffect, useState } from 'react';
 import { api, formatDate } from '../api.js';
 
-const SECTION_STATUS = {
-  none: { label: 'Sin casas de paz', cls: 'pink solid' },
-  behind: { label: 'Atrasada', cls: 'amber' },
-  ok: { label: 'Al día', cls: 'green' },
-};
 const day = (iso) => formatDate(iso, { day: 'numeric', month: 'short' });
 
-// Reuniones numbers for the admin Dashboard: this week, and the last 4 weeks by section and by leader.
+// This week's reuniones for the admin Dashboard.
 export default function GatheringMetrics() {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
@@ -46,53 +41,6 @@ export default function GatheringMetrics() {
         </div>
       </section>
 
-      <div className="dash-grid even">
-        <section className="card flush">
-          <div className="card-head">
-            <h2>Casas de Paz por sección</h2>
-            <span className="muted small">Últimas {data.weeks} semanas</span>
-          </div>
-          <table className="table cards-sm">
-            <thead><tr><th>Sección</th><th>Casas de Paz</th><th>Células</th><th>Última casa de paz</th><th>Estado</th></tr></thead>
-            <tbody>
-              {data.sections.map((s) => (
-                <tr key={s.section}>
-                  <td className="first"><strong>Sección {s.section}</strong></td>
-                  <td data-label="Casas de Paz"><strong>{s.casas}</strong></td>
-                  <td data-label="Células">{s.celulas}</td>
-                  <td data-label="Última casa de paz" className="muted">{s.lastCasa ? day(s.lastCasa) : '—'}</td>
-                  <td data-label="Estado"><span className={`pill ${SECTION_STATUS[s.status].cls}`}>{SECTION_STATUS[s.status].label}</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <p className="pad muted small">“Atrasada”: menos de la mitad de las casas de paz de la sección que más hizo.</p>
-        </section>
-
-        <section className="card flush">
-          <div className="card-head">
-            <h2>Quién dirige reuniones</h2>
-            <span className="muted small">Últimas {data.weeks} semanas</span>
-          </div>
-          {data.leaders.length === 0 ? (
-            <p className="pad muted">Todavía no hay reuniones en este período.</p>
-          ) : (
-            <table className="table cards-sm">
-              <thead><tr><th>Líder</th><th>Sección</th><th>Casas de Paz</th><th>Células</th></tr></thead>
-              <tbody>
-                {data.leaders.map((l) => (
-                  <tr key={l.personId}>
-                    <td className="first"><strong>{l.name}</strong></td>
-                    <td data-label="Sección">{l.section ? `Sección ${l.section}` : '—'}</td>
-                    <td data-label="Casas de Paz"><strong>{l.casas}</strong></td>
-                    <td data-label="Células">{l.celulas}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </section>
-      </div>
     </>
   );
 }

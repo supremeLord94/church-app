@@ -56,9 +56,10 @@ const port = process.env.PORT || 5000;
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => User.updateMany({ role: 'secretary' }, { $set: { role: 'user' } })) // old role name
-  .then(() => migrateGatheringRoles()) // old leader/host flags -> role tags
+  // old leader/host flags -> role tags. If this fails, the app should still start.
+  .then(() => migrateGatheringRoles().catch((e) => console.error('No se pudieron actualizar las reuniones antiguas (la app sigue funcionando):', e.message)))
   .then(() => app.listen(port, () => console.log(`API en http://localhost:${port}`)))
   .catch((e) => {
-    console.error('No se pudo conectar a MongoDB', e);
+    console.error('No se pudo iniciar el servidor. ¿Está encendido MongoDB y es correcto MONGO_URI?', e);
     process.exit(1);
   });

@@ -81,7 +81,7 @@ Users can sign in with their **email or their username**. A username is optional
 - **Tags in a casa de paz:** only Líder and Anfitrión (one person each).
 - The reunión page shows a **Responsables** box with who holds each tag. Roles are defined in `server/src/gatheringRoles.js` (and mirrored in `client/src/gatherings.js`).
 - **Adding people:** search by name and filter by section (the reunión's own section is selected by default). Only names, section and status are shown to leaders, never phone or address. "Registrar persona nueva" creates the person and adds them (as a visita in a casa de paz).
-- **Admins** see every section. The numbers live on the **Dashboard**, not on the Reuniones page: this week's reuniones (Monday to Sunday: how many células and casas de paz, how many people, by section) and the last 4 weeks per section and per leader. Leaders don't see those numbers, only the reuniones of their own section. A section with no casas de paz is flagged **Sin casas de paz**, and one with fewer than half of the most active section is **Atrasada** (`gatheringStats.js`).
+- **Admins** see every section. The numbers live on the **Dashboard**, not on the Reuniones page: **Reuniones de esta semana** (Monday to Sunday: how many células and casas de paz, how many people, by section). Leaders don't see those numbers, only the reuniones of their own section. A section with no casas de paz is flagged **Sin casas de paz**, and one with fewer than half of the most active section is **Atrasada** (`gatheringStats.js`).
 - Everything is recorded in **Actividad** under Reuniones.
 
 ## Sign-in protection and security
