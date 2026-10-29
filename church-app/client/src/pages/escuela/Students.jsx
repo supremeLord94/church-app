@@ -13,6 +13,7 @@ export default function Students() {
   const [stage, setStage] = useState('');
   const [section, setSection] = useState('');
   const [past, setPast] = useState(null); // row for the "past course" dialog
+  const [undo, setUndo] = useState(null);
   const [pastCourse, setPastCourse] = useState('abc');
 
   const load = () => api('/escuela/students').then(setRows).catch((e) => setError(e.message));
@@ -37,6 +38,17 @@ export default function Students() {
     try {
       await api('/escuela/completions', { method: 'POST', body: { personId: past.personId, course: pastCourse } });
       setPast(null);
+      load();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function removePast(row, course) {
+    if (!window.confirm(`¿Quitar ${courseLabel(course)} de ${fullName(row)}? Solo se quita el registro hecho a mano.`)) return;
+    try {
+      await api('/escuela/completions', { method: 'DELETE', body: { personId: row.personId, course } });
+      setUndo(null);
       load();
     } catch (err) {
       setError(err.message);
@@ -98,10 +110,12 @@ export default function Students() {
                     )}
                   </td>
                   <td className="muted" data-label="Última asistencia">{r.lastActivity ? formatDate(r.lastActivity, { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</td>
-                  <td data-label="Sección">{r.section ? `Sección ${r.section}` : '—'}</td>
+                  <td data-label="Sección">{r.section ? `${r.section}` : '—'}</td>
                   <td className="actions">
-                    <button className="link" onClick={() => { setPast(r); setPastCourse(COURSES.find((c) => !r.completedCourses.includes(c.id))?.id || 'abc'); }}>Registrar curso previo</button>
-                    {r.phone && <a className="pill action" href={`tel:${r.phone}`}>Llamar</a>}
+                    {r.stage !== 'graduated' && (
+                      <button className="link" onClick={() => { setPast(r); setPastCourse(COURSES.find((c) => !r.completedCourses.includes(c.id))?.id || 'abc'); }}>add</button>
+                    )}
+                    {r.manualCourses.length > 0 && <button className="link" onClick={() => setUndo(r)}>undo</button>}
                   </td>
                 </tr>
               );
@@ -124,6 +138,19 @@ export default function Students() {
             </label>
             <div className="sheet-actions"><span style={{ flex: 1 }} /><button type="button" className="ghost" onClick={() => setPast(null)}>Cancelar</button><button className="primary">Guardar</button></div>
           </form>
+        </div>
+      )}
+      {undo && (
+        <div className="drawer centered" role="dialog" aria-modal="true">
+          <div className="sheet narrow">
+            <div className="sheet-head"><h2>Cursos registrados a mano</h2><button type="button" className="link" onClick={() => setUndo(null)}>Cerrar</button></div>
+            <p className="muted">Cursos que se le marcaron como terminados a {fullName(undo)} sin un grupo. Quita el que fue un error.</p>
+            <ul className="rec-list">
+              {undo.manualCourses.map((c) => (
+                <li key={c}><span className="name">{courseLabel(c)}</span><button className="danger" onClick={() => removePast(undo, c)}>Quitar</button></li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
     </div>

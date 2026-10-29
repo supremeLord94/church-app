@@ -119,6 +119,19 @@ router.post('/completions', adminOnly, async (req, res) => {
   res.status(201).json(e);
 });
 
+// Undo a course registered by hand (no group). Courses finished inside a group are changed from the group page.
+router.delete('/completions', adminOnly, async (req, res) => {
+  const { personId, course } = req.body;
+  if (!isId(personId) || !COURSES.includes(course)) return res.status(400).json({ error: 'Datos inválidos' });
+  const person = await Person.findById(personId).select('firstName lastName').lean();
+  if (!person) return res.status(404).json({ error: 'Persona no encontrada' });
+  const r = await Enrollment.deleteMany({ person: personId, course, status: 'completed', cohort: null });
+  if (!r.deletedCount) return res.status(404).json({ error: 'Ese curso no fue registrado a mano' });
+  await log(req, 'escuela.completion-undo', `quitó el curso previo ${COURSE_LABELS[course]} de ${personLabel(person)}`, {
+    target: { type: 'persona', id: person._id, label: personLabel(person) },
+  });
+  res.json({ ok: true });
+});
 // ---------- groups ----------
 
 router.get('/cohorts', async (req, res) => {
