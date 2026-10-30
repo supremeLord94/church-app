@@ -3,11 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { api, formatDate, todayISO } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { TYPE_LABEL, typePill, typeTitle } from '../gatherings.js';
+import Icon from '../components/Icon.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import PersonPicker from '../components/PersonPicker.jsx';
+import SectionLeaders from '../components/SectionLeaders.jsx';
+import '../reunionType.css';
+
+// Casa de paz first: it is the more common one, so it is also the default.
+const FORM_TYPES = [['casa_de_paz', 'casa', 'home'], ['celula', 'celula', 'people']];
 
 function NewGathering({ isAdmin, people, onCancel, onCreated }) {
-  const [f, setF] = useState({ type: 'celula', classNumber: '', date: todayISO(), time: '', place: '', section: '', leaderId: '' });
+  const [f, setF] = useState({ type: 'casa_de_paz', classNumber: '', date: todayISO(), time: '', place: '', section: '', leaderId: '' });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.value }));
@@ -28,9 +34,11 @@ function NewGathering({ isAdmin, people, onCancel, onCreated }) {
   return (
     <form className="card stack" onSubmit={submit}>
       <h2>Nueva reunión</h2>
-      <div className="seg" role="group" aria-label="Tipo de reunión">
-        {Object.entries(TYPE_LABEL).map(([k, v]) => (
-          <button key={k} type="button" className={f.type === k ? 'active' : ''} onClick={() => setF((x) => ({ ...x, type: k }))}>{v}</button>
+      <div className="seg type-seg" role="group" aria-label="Tipo de reunión">
+        {FORM_TYPES.map(([k, cls, icon]) => (
+          <button key={k} type="button" className={`${cls} ${f.type === k ? 'active' : ''}`} aria-pressed={f.type === k} onClick={() => setF((x) => ({ ...x, type: k }))}>
+            <Icon name={icon} />{TYPE_LABEL[k]}
+          </button>
         ))}
       </div>
       <div className="form-row">
@@ -58,6 +66,7 @@ function NewGathering({ isAdmin, people, onCancel, onCreated }) {
       {isAdmin && (
         <label>Líder de la reunión
           <PersonPicker people={people} value={f.leaderId} onChange={(id) => setF((x) => ({ ...x, leaderId: id }))} placeholder="Escribe el nombre del líder" />
+          <span className="small muted">Si lo dejas vacío y eliges una sección, el Líder y el Co-líder son los líderes de esa sección. Si eliges a alguien, su pareja de líderes de la sección entra como Co-líder.</span>
         </label>
       )}
       {!isAdmin && <p className="muted small">Tú quedas como líder de esta reunión. Después puedes agregar personas y marcar a quien sea líder o anfitrión.</p>}
@@ -80,6 +89,7 @@ export default function Reuniones() {
   const [section, setSection] = useState('');
   const [weeks, setWeeks] = useState('8');
   const [adding, setAdding] = useState(false);
+  const [showLeaders, setShowLeaders] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -98,8 +108,11 @@ export default function Reuniones() {
   return (
     <div className="stack">
       <PageHeader title="Reuniones" sub="Células y casas de paz: quién las dirige, dónde se hicieron y quién asistió.">
+        {isAdmin && <button className="ghost" onClick={() => setShowLeaders((s) => !s)}>{showLeaders ? 'Ocultar líderes de sección' : 'Líderes de sección'}</button>}
         <button className="primary" onClick={() => setAdding((a) => !a)}>{adding ? 'Cerrar' : 'Nueva reunión'}</button>
       </PageHeader>
+
+      {isAdmin && showLeaders && <SectionLeaders people={people} />}
 
       {adding && <NewGathering isAdmin={isAdmin} people={people} onCancel={() => setAdding(false)} onCreated={(g) => navigate(`/reuniones/${g._id}`)} />}
       {error && <p className="error">{error}</p>}
@@ -135,7 +148,7 @@ export default function Reuniones() {
                 <tr key={g._id} onClick={() => navigate(`/reuniones/${g._id}`)}>
                   <td className="first"><strong>{formatDate(g.date, { weekday: 'short', day: 'numeric', month: 'short' })}</strong>{g.time && <span className="muted"> · {g.time}</span>}</td>
                   <td data-label="Tipo"><span className={`pill ${typePill(g)}`}>{typeTitle(g)}</span></td>
-                  <td data-label="Sección">{g.section}</td>
+                  <td data-label="Sección">Sección {g.section}</td>
                   <td data-label="Líder">{g.leaders.join(', ') || '—'}</td>
                   <td data-label="Anfitrión">{g.hosts.join(', ') || '—'}</td>
                   <td data-label="Lugar" className="muted">{g.place || '—'}</td>

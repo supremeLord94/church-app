@@ -1,0 +1,15 @@
+/* Type picker of the new-reunión form: orange house for casa de paz, lilac people for célula */
+.type-seg button { display: inline-flex; align-items: center; gap: 8px; }
+.type-seg button .icon { width: 22px; height: 22px; }
+.type-seg button.casa .icon { color: #e8742a; }
+.type-seg button.celula .icon { color: #8b6fd1; }
+.type-seg button.casa.active { background: #fff1e6; border-color: #e8742a; color: #b4501a; }
+.type-seg button.celula.active { background: #f1ecfc; border-color: #8b6fd1; color: #5b3fa8; }
+
+/* Default leaders of each section (admin card on the Reuniones page) */
+.sec-leaders { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.sec-leaders li { display: grid; gap: 8px 14px; grid-template-columns: 110px minmax(0, 1fr) minmax(200px, 280px); align-items: center; }
+@media (max-width: 759px) { .sec-leaders li { grid-template-columns: 1fr; } }
+.sec-leaders-people { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.sec-leaders-people .pill { display: inline-flex; align-items: center; gap: 4px; }
+.sec-leaders-people .pill button { min-height: 0; padding: 0 4px; font-size: 1rem; line-height: 1; }

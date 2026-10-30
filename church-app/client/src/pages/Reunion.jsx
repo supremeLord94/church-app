@@ -6,6 +6,9 @@ import { roleOf, rolesFor, typePill, typeTitle } from '../gatherings.js';
 import Icon from '../components/Icon.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import PersonForm from '../components/PersonForm.jsx';
+import '../reunionMenu.css';
+
+const MENU_W = 240;
 
 export default function Reunion() {
   const { id } = useParams();
@@ -16,7 +19,7 @@ export default function Reunion() {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({});
   const [registering, setRegistering] = useState(false);
-  const [openId, setOpenId] = useState(null); // person whose tags are being edited
+  const [menu, setMenu] = useState(null); // { id, top, left }: floating tag menu of one person
   const [q, setQ] = useState('');
   const [section, setSection] = useState('');
   const [found, setFound] = useState({ people: [], total: 0 });
@@ -30,6 +33,40 @@ export default function Reunion() {
     [id]
   );
   useEffect(() => { load(); }, [load]);
+
+  // Where to draw the tag menu: under the person's tag button, or above it when there is no room below.
+  // Returns null when the button is not on screen (the menu then closes).
+  const place = useCallback((personId) => {
+    const btn = document.querySelector(`[data-tags-for="${personId}"]`);
+    if (!btn) return null;
+    const r = btn.getBoundingClientRect();
+    const h = 64 + (g ? rolesFor(g.type).length : 7) * 46;
+    const left = Math.max(8, Math.min(r.right - MENU_W, window.innerWidth - MENU_W - 8));
+    let top = r.bottom + 6;
+    if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 6);
+    return { id: personId, top, left };
+  }, [g]);
+
+  // While the menu is open: follow the button on scroll/resize, close on outside click or Escape.
+  useEffect(() => {
+    if (!menu) return undefined;
+    const move = () => setMenu((m) => (m ? place(m.id) : m));
+    const onDown = (e) => { if (!e.target.closest('.tag-menu, .icon-btn.tags')) setMenu(null); };
+    const onKey = (e) => { if (e.key === 'Escape') setMenu(null); };
+    window.addEventListener('scroll', move, true);
+    window.addEventListener('resize', move);
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('scroll', move, true);
+      window.removeEventListener('resize', move);
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [menu?.id, place]); // eslint-disable-line
+
+  // After every change the list may reorder: keep the menu next to its button.
+  useEffect(() => { setMenu((m) => (m ? place(m.id) : m)); }, [place]);
 
   // Search people to add: by name, filtered by section (debounced).
   const count = g?.participants.length;
@@ -56,6 +93,7 @@ export default function Reunion() {
     (a, b) => b.roles.includes('leader') - a.roles.includes('leader') || b.roles.length - a.roles.length || fullName(a.person).localeCompare(fullName(b.person))
   );
   const base = `/gatherings/${id}`;
+  const menuPerson = menu && g.participants.find((p) => p.person._id === menu.id);
 
   const act = async (fn) => {
     setError('');
@@ -130,8 +168,8 @@ export default function Reunion() {
             </div>
             <ul className="person-list pad-x">
               {people.map((p) => {
-                const open = openId === p.person._id;
                 const name = fullName(p.person);
+                const isOpen = menu?.id === p.person._id;
                 return (
                   <li key={p.person._id} className={`person-row sec-card sec-${p.person.section || 0}`}>
                     <div className="person-main">
@@ -142,27 +180,14 @@ export default function Reunion() {
                       </span>
                     </div>
                     <div className="row-actions">
-                      <button className="icon-btn tags" aria-label={`Etiquetas de ${name}`} title="Etiquetas" aria-expanded={open} onClick={() => setOpenId(open ? null : p.person._id)}><Icon name="tag" /></button>
+                      <button className="icon-btn tags" data-tags-for={p.person._id} aria-label={`Etiquetas de ${name}`} title="Etiquetas" aria-haspopup="menu" aria-expanded={isOpen} onClick={() => setMenu(isOpen ? null : place(p.person._id))}><Icon name="tag" /></button>
                       <button className="icon-btn remove" aria-label={`Quitar a ${name} de la reunión`} title="Quitar de la reunión" onClick={() => remove(p)}><Icon name="minus" /></button>
                     </div>
-                    {open && (
-                      <div className="role-chips" role="group" aria-label={`Etiquetas de ${name}`}>
-                        {tags.map((r) => {
-                          const on = has(p, r.key);
-                          const other = r.single && !on ? holders(r.key)[0] : null; // someone else holds it: tapping moves it
-                          return (
-                            <button key={r.key} className={`tgl ${on ? 'on' : ''}`} aria-pressed={on} onClick={() => setRole(p.person._id, r.key, !on)} title={other ? `Hoy la tiene ${fullName(other.person)}. Se le quitará a esa persona.` : undefined}>
-                              {r.label}{other ? ` · ${other.person.firstName}` : ''}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
                   </li>
                 );
               })}
             </ul>
-            <p className="pad muted small">Líder, Sublíder, Anfitrión, Palabra y Alabanzas son de una sola persona: si se las das a alguien más, se le quitan a quien las tenía. Oración y Ofrendas pueden ser de varias. Las etiquetas son solo de esta reunión.</p>
+            <p className="pad muted small">Líder, Sublíder, Anfitrión, Palabra y Alabanzas son de una sola persona: si se las das a alguien más, se le quitan a quien las tenía. Co-líder, Oración y Ofrendas pueden ser de varias. Las etiquetas son solo de esta reunión.</p>
           </section>
         </div>
 
@@ -201,6 +226,24 @@ export default function Reunion() {
           <p className="muted small">Se registra en la base de datos y se agrega a esta reunión{g.type === 'casa_de_paz' ? ' como visita' : ''}.</p>
         </aside>
       </div>
+
+      {menu && menuPerson && (
+        <div className="tag-menu" role="menu" aria-label={`Etiquetas de ${fullName(menuPerson.person)}`} style={{ top: menu.top, left: menu.left, width: MENU_W }}>
+          <div className="tag-menu-head">{fullName(menuPerson.person)}</div>
+          {tags.map((r) => {
+            const on = has(menuPerson, r.key);
+            const other = r.single && !on ? holders(r.key)[0] : null; // someone else holds it: choosing it moves it
+            return (
+              <button key={r.key} type="button" role="menuitemcheckbox" aria-checked={on} className={`tag-opt ${on ? 'on' : ''}`} onClick={() => setRole(menu.id, r.key, !on)}>
+                <span className="tag-check" aria-hidden="true">{on ? '✓' : ''}</span>
+                <span className="tag-name">{r.label}</span>
+                {other && <span className="tag-hint">hoy: {other.person.firstName}</span>}
+              </button>
+            );
+          })}
+          {error && <p className="tag-error error">{error}</p>}
+        </div>
+      )}
 
       {registering && (
         <PersonForm

@@ -3,9 +3,10 @@ export const typeTitle = (g) => (g.type === 'casa_de_paz' ? `Casa de Paz · clas
 export const typePill = (g) => (g.type === 'casa_de_paz' ? 'cyan' : 'orange');
 
 // Tags a person can have in one reunión. single: only one person can hold it (tagging someone else moves it).
-// Células use all of them; casas de paz only leader and host. Keep in step with server/src/gatheringRoles.js.
+// Células use all of them; casas de paz only leader, coleader and host. Keep in step with server/src/gatheringRoles.js.
 export const ROLES = [
   { key: 'leader', label: 'Líder', single: true, types: ['celula', 'casa_de_paz'], pill: 'orange' },
+  { key: 'coleader', label: 'Co-líder', single: false, types: ['celula', 'casa_de_paz'], pill: 'orange' },
   { key: 'subleader', label: 'Sublíder', single: true, types: ['celula'], pill: 'orange' },
   { key: 'host', label: 'Anfitrión', single: true, types: ['celula', 'casa_de_paz'], pill: 'cyan' },
   { key: 'word', label: 'Palabra', single: true, types: ['celula'], pill: 'cyan' },

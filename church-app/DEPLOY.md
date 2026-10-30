@@ -77,7 +77,7 @@ Save (Ctrl+O, Enter, Ctrl+X), then `systemctl restart mongod`. By default MongoD
 On your **laptop** (PowerShell), upload the zip I gave you (not your working folder: it contains `node_modules` and your private `.env`):
 
 ```powershell
-scp church-app.zip root@SERVER_IP:/tmp/
+scp church-app.zip root@familiareal.app:/tmp/
 ```
 
 On the **server**:

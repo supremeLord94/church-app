@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import Gathering from '../models/Gathering.js';
 import Person from '../models/Person.js';
+import Settings from '../models/Settings.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { audit, auditSession } from '../audit.js';
 import { summarizeGatherings, summarizeWeek, weekBounds } from '../gatheringStats.js';
@@ -39,13 +40,23 @@ async function load(req, res) {
 }
 const detail = async (id) => populated(Gathering.findById(id)).lean();
 
+const named = (g, role) => g.participants.filter((p) => p.roles?.includes(role) && p.person).map((p) => nameOf(p.person));
 const brief = (g) => ({
   _id: g._id, type: g.type, classNumber: g.classNumber, date: g.date, time: g.time, place: g.place, section: g.section,
   count: g.participants.length,
-  leaders: g.participants.filter((p) => p.roles?.includes('leader') && p.person).map((p) => nameOf(p.person)),
-  hosts: g.participants.filter((p) => p.roles?.includes('host') && p.person).map((p) => nameOf(p.person)),
+  leaders: [...named(g, 'leader'), ...named(g, 'coleader')], // the couple: Líder first, then Co-líder
+  hosts: named(g, 'host'),
   createdBy: g.createdBy?.name || '',
 });
+
+// The default leaders of a section (set by an admin in Settings), without people who are inactive or deleted.
+async function sectionDefaults(section) {
+  const s = await Settings.findOne({ key: 'main' }).select('sectionLeaders').lean();
+  const ids = s?.sectionLeaders?.find((x) => x.section === section)?.people || [];
+  if (!ids.length) return [];
+  const ok = new Set((await Person.find({ _id: { $in: ids }, status: { $ne: 'inactive' } }).select('_id').lean()).map((p) => String(p._id)));
+  return ids.filter((id) => ok.has(String(id)));
+}
 
 // GET /api/gatherings?type=&section=&weeks=
 router.get('/', async (req, res) => {
@@ -93,24 +104,38 @@ router.post('/', async (req, res) => {
     lesson = Number(classNumber);
     if (!Number.isInteger(lesson) || lesson < 1 || lesson > 9) return res.status(400).json({ error: 'La clase debe ser un número del 1 al 9' });
   }
-  // The leader is whoever creates it (their own record), unless an admin picks someone.
+  // The leader is whoever creates it (their own record). An admin picks someone, or just the section:
+  // then the first default leader of that section is the Líder.
   let leaderId, section;
   if (req.user.role === 'leader') {
     leaderId = req.user.person;
     section = req.user.section;
   } else {
+    const chosen = SECTIONS.includes(Number(req.body.section)) ? Number(req.body.section) : null;
     leaderId = req.body.leaderId;
-    const lp = isId(leaderId) ? await Person.findById(leaderId).select('section').lean() : null;
-    if (!lp) return res.status(400).json({ error: 'Elige quién dirige la reunión' });
-    section = Number(req.body.section) || lp.section;
+    let lp = isId(leaderId) ? await Person.findById(leaderId).select('section').lean() : null;
+    if (!lp && chosen) {
+      const first = (await sectionDefaults(chosen))[0];
+      if (first) {
+        leaderId = String(first);
+        lp = await Person.findById(first).select('section').lean();
+      }
+    }
+    if (!lp) return res.status(400).json({ error: 'Elige quién dirige la reunión, o una sección que ya tenga líderes asignados' });
+    section = chosen || lp.section;
     if (!SECTIONS.includes(section)) return res.status(400).json({ error: 'Elige la sección de la reunión' });
+  }
+  // Líder = the person above; the rest of the section's default leaders (the partner) join as Co-líder.
+  const participants = [{ person: leaderId, roles: ['leader'] }];
+  for (const id of await sectionDefaults(section)) {
+    if (String(id) !== String(leaderId)) participants.push({ person: id, roles: ['coleader'] });
   }
   const g = await Gathering.create({
     type, classNumber: lesson, date: isDate(date) ? date : today(),
     time: /^\d{2}:\d{2}$/.test(time || '') ? time : undefined,
     place: String(place || '').trim().slice(0, 120) || undefined,
     section, createdBy: req.user.id,
-    participants: [{ person: leaderId, roles: ['leader'] }], // tagged as the leader automatically
+    participants,
   });
   await audit(req, { category: 'reuniones', action: 'gathering.create', summary: `creó la reunión: ${label(g)}`, target: target(g) });
   res.status(201).json(await detail(g._id));
@@ -196,6 +221,9 @@ router.put('/:id/participants/:personId', async (req, res) => {
   if (result.unchanged) return res.json(await detail(g._id));
   if (result.error === 'leader-required') {
     return res.status(400).json({ error: 'La reunión necesita un líder. Marca a otra persona como líder y la etiqueta se mueve sola' });
+  }
+  if (result.error === 'already-leader') {
+    return res.status(400).json({ error: 'Esa persona ya es la líder de la reunión, no puede ser también co-líder' });
   }
   const person = await Person.findById(p.person).select('firstName lastName').lean();
   const previous = result.previous ? await Person.findById(result.previous).select('firstName lastName').lean() : null;

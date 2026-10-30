@@ -121,7 +121,7 @@ export default function Dashboard() {
 
   return (
     <div className="stack">
-      <PageHeader title="Dashboard" sub={`Último domingo registrado: ${formatDate(latest.date)}`}>
+      <PageHeader title="Dashboard" sub={`Último servicio registrado: ${formatDate(latest.date)}`}>
         {user.role === 'admin' && (
           <form className="inline-form" onSubmit={saveGoal}>
             <label className="inline">Meta de asistencia
@@ -136,7 +136,7 @@ export default function Dashboard() {
         <div className="stat big">
           <strong>{latest.total}</strong>
           <span>asistieron{goal > 0 ? ` · meta ${goal}` : ''}</span>
-          {delta !== null && <em className={delta >= 0 ? 'up' : 'down'}>{delta >= 0 ? '+' : ''}{delta} vs. domingo anterior</em>}
+          {delta !== null && <em className={delta >= 0 ? 'up' : 'down'}>{delta >= 0 ? '+' : ''}{delta} vs. servicio anterior</em>}
         </div>
         <div className="stat"><strong>{latest.membersPresent}</strong><span>de {latest.membersTotal} miembros</span></div>
         <div className="stat"><strong className={latest.membersMissing ? 'warn' : ''}>{latest.membersMissing}</strong><span>miembros faltaron</span></div>
@@ -153,7 +153,7 @@ export default function Dashboard() {
       </section>
 
       <section className="card">
-        <h2>Miembros por sección, último domingo</h2>
+        <h2>Miembros por sección, último servicio</h2>
         <ul className="sections">
           {sections.map((s) => {
             const pct = s.total ? Math.round((s.present / s.total) * 100) : 0;

@@ -59,7 +59,6 @@ export default function Students() {
 
   return (
     <div className="stack">
-      <Icon name="addEdit" /><Icon name="undo" />
       <PageHeader title="Escuela de Vida" sub="Progreso de cada persona en los cuatro cursos." />
       <EscuelaTabs />
 
