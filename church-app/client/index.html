@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Familia Real</title>
     <link rel="icon" type="image/png" href="/favicon.png" />
+    <script>
+      // Apply the saved theme before the first paint (no flash of the light theme on reload).
+      try {
+        var m = document.cookie.match(/(?:^|; )theme=(light|dark|auto)/), t = m ? m[1] : 'light';
+        if (t === 'dark' || (t === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.dataset.theme = 'dark';
+      } catch (e) {}
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet" />

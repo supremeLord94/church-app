@@ -1,0 +1,59 @@
+/* Dark theme (Facebook-style). Loaded after styles.css, so it only overrides. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #18191a; --surface: #242526; --ink: #e4e6eb; --muted: #b0b3b8; --line: #3e4042;
+  --periwinkle: #8a8d91;
+  --primary: #2d88ff; --primary-deep: #78aaff; --primary-soft: rgba(45, 136, 255, 0.16); --primary-line: rgba(45, 136, 255, 0.42);
+  --accent: #3cc4ef; --accent-deep: #5fd0f2; --accent-soft: rgba(20, 168, 212, 0.16);
+  --alert: #ff6b8f; --alert-bright: #f06595; --alert-soft: rgba(240, 101, 149, 0.16);
+  --amber: #f5b83d; --amber-soft: rgba(245, 158, 11, 0.16); --amber-text: #f7c76a; --amber-line: rgba(245, 158, 11, 0.4);
+  --green: #4cd08a; --green-soft: rgba(52, 199, 106, 0.16); --green-line: rgba(52, 199, 106, 0.42);
+}
+
+/* Fields and plain buttons: lighter gray than the card, like Facebook. :where keeps the specificity
+   low so .primary, .danger, .link, etc. still win. */
+:where(html[data-theme="dark"]) input,
+:where(html[data-theme="dark"]) select,
+:where(html[data-theme="dark"]) textarea,
+:where(html[data-theme="dark"]) button { background: #3a3b3c; border-color: #4e4f50; }
+html[data-theme="dark"] ::placeholder { color: #8a8d91; }
+
+/* Hover backgrounds that were hardcoded light */
+html[data-theme="dark"] .table tbody tr:hover td,
+html[data-theme="dark"] .cohort-list a:hover { background: #2d2e30; }
+html[data-theme="dark"] .nav a:not(.active):hover { background: #3a3b3c; }
+
+/* Pills and borders that were hardcoded light */
+html[data-theme="dark"] .pill.ink { background: #3a3b3c; border-color: #4e4f50; }
+html[data-theme="dark"] .pill.pink,
+html[data-theme="dark"] button.danger,
+html[data-theme="dark"] .icon-btn.remove { border-color: rgba(240, 101, 149, 0.45); }
+html[data-theme="dark"] .pill.cyan,
+html[data-theme="dark"] .icon-btn.tags { border-color: rgba(20, 168, 212, 0.45); }
+html[data-theme="dark"] .pill.pink.solid { background: #d6336c; border-color: #d6336c; color: #fff; }
+
+/* Solid blue things: --primary-deep is now a light text color, so give backgrounds their own shade */
+html[data-theme="dark"] button.primary:hover,
+html[data-theme="dark"] .icon-btn.add:hover,
+html[data-theme="dark"] .tgl.on:hover,
+html[data-theme="dark"] .stat.big { background: #1b74e4; border-color: #1b74e4; }
+html[data-theme="dark"] a.pill.action { background: #2d88ff; border-color: #2d88ff; }
+html[data-theme="dark"] .icon-btn.tags:hover,
+html[data-theme="dark"] .icon-btn.tags[aria-expanded='true'],
+html[data-theme="dark"] .tag-opt.on .tag-check { background: #0c7fa3; border-color: #0c7fa3; color: #fff; }
+html[data-theme="dark"] .icon-btn.remove:hover { background: #d6336c; border-color: #d6336c; }
+
+/* Chart points */
+html[data-theme="dark"] .chart .pt { stroke: var(--surface); }
+
+/* Section colors (Reunión page): mixed with the surface instead of white */
+html[data-theme="dark"] .pill.sec {
+  background: color-mix(in srgb, var(--sec) 24%, var(--surface));
+  color: color-mix(in srgb, var(--sec) 55%, #fff);
+  border-color: color-mix(in srgb, var(--sec) 45%, var(--surface));
+}
+html[data-theme="dark"] .sec-card.result { background: color-mix(in srgb, var(--sec) 12%, var(--surface)); }
+
+/* New-reunión type buttons */
+html[data-theme="dark"] .type-seg button.casa.active { background: rgba(232, 116, 42, 0.18); border-color: #e8742a; color: #ffa66b; }
+html[data-theme="dark"] .type-seg button.celula.active { background: rgba(139, 111, 209, 0.22); border-color: #8b6fd1; color: #c3adf5; }

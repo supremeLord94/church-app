@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api, setToken } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { ROLE_LABEL } from '../roles.js';
+import { getTheme, setTheme } from '../theme.js';
 import PageHeader from '../components/PageHeader.jsx';
 import UsernameField from '../components/UsernameField.jsx';
 
@@ -15,6 +16,9 @@ export default function Account() {
   const [pw, setPw] = useState({ currentPassword: '', newPassword: '', confirm: '' });
   const [pwError, setPwError] = useState('');
   const [pwDone, setPwDone] = useState(false);
+
+  const [theme, setThemeState] = useState(getTheme());
+  const pickTheme = (t) => { setTheme(t); setThemeState(t); };
 
   useEffect(() => {
     setProfile((p) => ({ ...p, name: user.name, username: user.username || '', email: user.email || '' }));
@@ -56,6 +60,17 @@ export default function Account() {
       {user.mustChangePassword && (
         <p className="card notice">Un administrador te dio una contraseña temporal. Elige una nueva para continuar.</p>
       )}
+
+      <section className="card">
+        <h2>Apariencia</h2>
+        <div className="seg" role="group" aria-label="Tema">
+          {[['light', 'Claro'], ['dark', 'Oscuro'], ['auto', 'Automático']].map(([k, label]) => (
+            <button key={k} type="button" className={theme === k ? 'active' : ''} aria-pressed={theme === k} onClick={() => pickTheme(k)}>{label}</button>
+          ))}
+        </div>
+        <p className="muted small" style={{ marginTop: 8 }}>Se guarda en este navegador y también se usa en la pantalla de inicio de sesión. «Automático» sigue la configuración de tu dispositivo.</p>
+      </section>
+
       <div className="cards-2">
         <form className="card form-card" onSubmit={saveProfile}>
           <h2>Mis datos</h2>
