@@ -59,7 +59,7 @@ Users can sign in with their **email or their username**. A username is optional
 
 - Sections 1-5 are a field on each person. Status: `visitor`, `member` (counted in "who is missing"), `inactive` (hidden from check-in).
 - A Sunday is created the first time someone is marked present. "Missing" means active members who were not marked.
-- **Personas** opens the person form as a centered window. City and state are prefilled with Tijuana / BC when empty (`DEFAULT_CITY` and `DEFAULT_STATE` in `client/src/components/PersonForm.jsx`). Name and phone fields ask the browser not to autofill. Registering someone with the same first and last name as an existing person asks for confirmation first.
+- **Personas** opens the person form as a centered window.
 - **Dashboard** also lists everyone with a birthday in the next 4 weeks.
 - **Ausentes** lists every member who missed at least one service in the last 6 weeks (the 6 weeks ending at the most recent recorded service). Every missed service counts, in a row or not, and a person is only counted from their first counted Sunday. Most missed first, with how many services they attended. **Crítico** (pink) = 4 or more missed, **Baja** (orange-yellow) = 2 or 3, no tag for 1. Thresholds are `CRITICAL_AT` and `LOW_AT` in `server/src/missing.js`. **Dashboard** shows totals, a 12-week line chart with the goal (black: everyone present, blue: members who attended, green: new people and visitors), and a per-section breakdown (admin only).
 

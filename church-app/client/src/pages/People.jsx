@@ -17,8 +17,6 @@ function ageOf(birthday) {
 }
 
 function PersonCard({ p, byId, onOpen }) {
-  const a = p.address || {};
-  const address = [a.street, a.city, a.state, a.zip].filter(Boolean).join(', ');
   const age = ageOf(p.birthday);
   const family = (p.relatives || [])
     .map((r) => (byId[r.person] ? `${fullName(byId[r.person])}${r.relationship ? ` (${r.relationship})` : ''}` : null))
@@ -27,7 +25,7 @@ function PersonCard({ p, byId, onOpen }) {
 
   const rows = [];
   if (p.phone) rows.push(['Teléfono', <a key="t" href={`tel:${p.phone}`} onClick={(e) => e.stopPropagation()}>{p.phone}</a>]);
-  if (address) rows.push(['Dirección', address]);
+  if (p.colonia) rows.push(['Colonia/Barrio', p.colonia]);
   if (p.birthday) rows.push(['Cumpleaños', `${formatDate(p.birthday, { day: 'numeric', month: 'long' })}${age !== null ? ` · ${age} años` : ''}`]);
   if (p.invitedBy && byId[p.invitedBy]) rows.push(['Invitado por', fullName(byId[p.invitedBy])]);
   if (family) rows.push(['Familia', family]);
@@ -76,11 +74,11 @@ export default function People() {
 
   const byId = useMemo(() => Object.fromEntries(people.map((p) => [p._id, p])), [people]);
 
-  // What the search looks through: name, phone, address and notes.
+  // What the search looks through: name, phone, colonia/barrio and notes.
   const indexed = useMemo(
     () => people.map((p) => ({
       p,
-      hay: plain([p.firstName, p.lastName, p.phone, p.address?.street, p.address?.city, p.address?.state, p.address?.zip, p.notes].join(' ')),
+      hay: plain([p.firstName, p.lastName, p.phone, p.colonia, p.notes].join(' ')),
     })),
     [people]
   );
@@ -103,7 +101,7 @@ export default function People() {
       </PageHeader>
 
       <div className="toolbar wide">
-        <input type="search" placeholder="Buscar por nombre, teléfono, dirección o notas" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <input type="search" placeholder="Buscar por nombre, teléfono, colonia o notas" value={search} onChange={(e) => setSearch(e.target.value)} />
         <select value={section} onChange={(e) => setSection(e.target.value)} aria-label="Sección">
           <option value="">Red 1-8</option>
           {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>Red {n}</option>)}

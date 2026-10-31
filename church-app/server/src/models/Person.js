@@ -7,12 +7,7 @@ const personSchema = new Schema(
     firstName: { type: String, required: true, trim: true },
     lastName: { type: String, required: true, trim: true },
     phone: { type: String, trim: true },
-    address: {
-      street: String,
-      city: String,
-      state: String,
-      zip: String,
-    },
+    colonia: { type: String, trim: true }, // colonia / barrio (replaces the old address)
     birthday: { type: String, match: /^\d{4}-\d{2}-\d{2}$/ }, // YYYY-MM-DD
     section: { type: Number, min: 1, max: 5 }, // sections 1-5, empty = unassigned
     invitedBy: { type: Schema.Types.ObjectId, ref: 'Person' },

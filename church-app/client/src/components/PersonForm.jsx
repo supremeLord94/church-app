@@ -3,14 +3,10 @@ import { api, formatDate, toISO } from '../api.js';
 import { noAutofill } from '../noAutofill.js';
 import PersonPicker from './PersonPicker.jsx';
 
-// Most people live in the same place, so these are filled in (and can be changed) when empty.
-export const DEFAULT_CITY = 'Tijuana';
-export const DEFAULT_STATE = 'BC';
-
 const EMPTY = {
   firstName: '', lastName: '', phone: '', birthday: '', section: '', status: 'member',
   invitedBy: '', joinedAt: toISO(new Date()), notes: '', baptized: false, macroencuentro: false,
-  address: { street: '', city: DEFAULT_CITY, state: DEFAULT_STATE, zip: '' }, relatives: [],
+  colonia: '', relatives: [],
 };
 
 // limited: for teachers, who can register a person but can't browse the rest of the people list,
@@ -25,14 +21,13 @@ export default function PersonForm({ person, people = [], onSaved, onClose, onDe
   useEffect(() => {
     if (!editing) return setForm({ ...EMPTY, joinedAt: toISO(new Date()), ...defaults });
     api(`/people/${person._id}`).then((p) => {
-      const a = p.address || {};
       setForm({
         ...EMPTY, ...p,
         section: p.section || '',
         baptized: !!p.baptized,
         macroencuentro: !!p.macroencuentro,
         invitedBy: p.invitedBy?._id || '',
-        address: { street: a.street || '', city: a.city || DEFAULT_CITY, state: a.state || DEFAULT_STATE, zip: a.zip || '' },
+        colonia: p.colonia || '',
         relatives: (p.relatives || []).map((r) => ({ person: r.person?._id || '', relationship: r.relationship || '' })),
       });
     });
@@ -41,7 +36,6 @@ export default function PersonForm({ person, people = [], onSaved, onClose, onDe
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const setYesNo = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value === 'yes' }));
-  const setAddr = (k) => (e) => setForm((f) => ({ ...f, address: { ...f.address, [k]: e.target.value } }));
   const setRel = (i, patch) =>
     setForm((f) => ({ ...f, relatives: f.relatives.map((r, j) => (j === i ? { ...r, ...patch } : r)) }));
 
@@ -122,15 +116,7 @@ export default function PersonForm({ person, people = [], onSaved, onClose, onDe
           </label>
         )}
 
-        <fieldset>
-          <legend>Dirección</legend>
-          <label>Calle<input autoComplete="street-address" value={form.address.street} onChange={setAddr('street')} /></label>
-          <div className="grid3">
-            <label>Ciudad<input autoComplete="address-level2" value={form.address.city} onChange={setAddr('city')} /></label>
-            <label>Estado<input autoComplete="address-level1" value={form.address.state} onChange={setAddr('state')} /></label>
-            <label>Código postal<input autoComplete="postal-code" value={form.address.zip} onChange={setAddr('zip')} /></label>
-          </div>
-        </fieldset>
+        <label>Colonia/Barrio<input autoComplete="off" value={form.colonia} onChange={set('colonia')} /></label>
 
         {!limited && (
           <fieldset>

@@ -14,15 +14,14 @@ const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 import { today } from '../util.js';
 
 const FIELD_LABELS = {
-  firstName: 'nombre', lastName: 'apellido', phone: 'teléfono', address: 'dirección', birthday: 'cumpleaños',
+  firstName: 'nombre', lastName: 'apellido', phone: 'teléfono', colonia: 'colonia/barrio', birthday: 'cumpleaños',
   section: 'sección', invitedBy: 'invitado por', relatives: 'familiares', status: 'estado',
   joinedAt: 'primer domingo contado', notes: 'notas', baptized: 'bautismo', macroencuentro: 'macroencuentro',
 };
 const STATUS_ES = { visitor: 'Visita', member: 'Miembro', inactive: 'Inactivo' };
 const YES_NO = ['baptized', 'macroencuentro'];
 const norm = (k, v) =>
-  k === 'address' ? ['street', 'city', 'state', 'zip'].map((f) => v?.[f] || '').join('|')
-  : k === 'relatives' ? (v || []).map((r) => `${r.person}:${r.relationship || ''}`).join(',')
+  k === 'relatives' ? (v || []).map((r) => `${r.person}:${r.relationship || ''}`).join(',')
   : YES_NO.includes(k) ? (v ? 'yes' : 'no') // a missing value counts as "no"
   : String(v ?? '');
 
@@ -43,7 +42,7 @@ function diffPerson(before, after) {
 // Only these fields can be set from the client.
 const pick = (b) => {
   const out = {};
-  for (const k of ['firstName', 'lastName', 'phone', 'address', 'birthday', 'section', 'invitedBy', 'relatives', 'status', 'joinedAt', 'notes']) {
+  for (const k of ['firstName', 'lastName', 'phone', 'colonia', 'birthday', 'section', 'invitedBy', 'relatives', 'status', 'joinedAt', 'notes']) {
     if (b[k] !== undefined) out[k] = b[k] === '' ? undefined : b[k];
   }
   for (const k of YES_NO) if (typeof b[k] === 'boolean') out[k] = b[k];
@@ -59,7 +58,7 @@ router.get('/', staff, async (req, res) => {
   if (status) q.status = status;
   if (search) {
     const terms = String(search).trim().split(/\s+/).map((t) => new RegExp(escapeRegex(t), 'i'));
-    q.$and = terms.map((r) => ({ $or: [{ firstName: r }, { lastName: r }, { phone: r }] }));
+    q.$and = terms.map((r) => ({ $or: [{ firstName: r }, { lastName: r }, { phone: r }, { colonia: r }] }));
   }
   const people = await Person.find(q).sort({ lastName: 1, firstName: 1 }).limit(1000).lean();
   res.json(people);
@@ -108,7 +107,7 @@ router.get('/:id/attendance', staff, async (req, res) => {
 router.put('/:id', staff, async (req, res) => {
   const data = pick(req.body);
   const unset = {};
-  for (const k of ['phone', 'birthday', 'section', 'invitedBy', 'notes']) {
+  for (const k of ['phone', 'colonia', 'birthday', 'section', 'invitedBy', 'notes']) {
     if (req.body[k] === '' || req.body[k] === null) unset[k] = '';
   }
   const before = await Person.findById(req.params.id).lean();
@@ -120,7 +119,7 @@ router.put('/:id', staff, async (req, res) => {
   if (!person) return res.status(404).json({ error: 'Persona no encontrada' });
   const changed = diffPerson(before, person.toObject());
   if (changed.length) {
-    // Field names only (and status/section/yes-no, which aren't private). Phone and address values are never stored.
+    // Field names only (and status/section/yes-no, which aren't private). Phone and colonia values are never stored.
     await audit(req, {
       category: 'personas', action: 'person.update', summary: `editó a ${person.firstName} ${person.lastName}`, details: changed,
       target: { type: 'persona', id: person._id, label: `${person.firstName} ${person.lastName}` },

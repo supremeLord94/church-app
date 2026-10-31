@@ -18,7 +18,7 @@ import escuelaRoutes from './routes/escuela.js';
 import User from './models/User.js';
 import activityRoutes from './routes/activity.js';
 import gatheringRoutes from './routes/gatherings.js';
-import { migrateGatheringRoles } from './migrations.js';
+import { migrateGatheringRoles, migratePersonColonia } from './migrations.js';
 
 const app = express();
 app.disable('x-powered-by');
@@ -58,6 +58,8 @@ mongoose
   .then(() => User.updateMany({ role: 'secretary' }, { $set: { role: 'user' } })) // old role name
   // old leader/host flags -> role tags. If this fails, the app should still start.
   .then(() => migrateGatheringRoles().catch((e) => console.error('No se pudieron actualizar las reuniones antiguas (la app sigue funcionando):', e.message)))
+  // old address -> colonia/barrio. If this fails, the app should still start.
+  .then(() => migratePersonColonia().catch((e) => console.error('No se pudo migrar la colonia/barrio (la app sigue funcionando):', e.message)))
   .then(() => app.listen(port, () => console.log(`API en http://localhost:${port}`)))
   .catch((e) => {
     console.error('No se pudo iniciar el servidor. ¿Está encendido MongoDB y es correcto MONGO_URI?', e);
