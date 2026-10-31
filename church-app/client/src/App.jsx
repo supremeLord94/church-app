@@ -69,9 +69,12 @@ function Shell({ children }) {
           ))}
         </nav>
         <div className="side-foot">
-          <NavLink to="/cuenta" className="who">
-            <strong>{user.name}</strong>
-            <span>{ROLE_LABEL[user.role]}</span>
+          <NavLink to="/cuenta" className="who" aria-label="Mi cuenta" title="Mi cuenta">
+            <Icon name="settings" />
+            <div className="who-text">
+              <strong>{user.name}</strong>
+              <span>{ROLE_LABEL[user.role]} · Mi cuenta</span>
+            </div>
           </NavLink>
           <button className="link" onClick={logout}>Salir</button>
         </div>

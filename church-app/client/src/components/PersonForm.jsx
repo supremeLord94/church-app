@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api, formatDate, toISO } from '../api.js';
 import { noAutofill } from '../noAutofill.js';
 import PersonPicker from './PersonPicker.jsx';
+import '../personForm.css';
 
 const EMPTY = {
   firstName: '', lastName: '', phone: '', birthday: '', section: '', status: 'member',
@@ -108,6 +109,7 @@ export default function PersonForm({ person, people = [], onSaved, onClose, onDe
               <option value="yes">Sí</option>
             </select>
           </label>
+          {!limited && <label>Primer domingo contado<input type="date" value={form.joinedAt || ''} onChange={set('joinedAt')} /></label>}
         </div>
 
         {!limited && (
@@ -134,10 +136,7 @@ export default function PersonForm({ person, people = [], onSaved, onClose, onDe
           </fieldset>
         )}
 
-        <div className="grid3e">
-          {!limited && <label>Primer domingo contado<input type="date" value={form.joinedAt || ''} onChange={set('joinedAt')} /></label>}
-          <label className="span2">Notas<textarea rows="2" value={form.notes || ''} onChange={set('notes')} /></label>
-        </div>
+        <label>Notas<textarea rows="2" value={form.notes || ''} onChange={set('notes')} /></label>
 
         {editing && history.length > 0 && (
           <div>

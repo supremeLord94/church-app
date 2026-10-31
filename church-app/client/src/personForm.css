@@ -1,0 +1,17 @@
+.drawer.person .sheet { gap: 12px; padding: 18px; }
+.drawer.person .sheet fieldset { padding: 8px 12px 12px; gap: 8px; }
+.pf-addr { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+.pf-addr label:first-child { grid-column: 1 / -1; }
+@media (min-width: 700px) {
+  .pf-addr { grid-template-columns: 2fr 1.2fr 0.7fr 0.9fr; }
+  .pf-addr label:first-child { grid-column: auto; }
+}
+@media (min-width: 900px) {
+  .drawer.person { padding: 3vh 24px; }
+  .drawer.person .sheet { width: min(760px, 100%); font-size: 1rem; padding: 20px; }
+  .drawer.person .sheet h2 { font-size: 1.3rem; }
+  .drawer.person .sheet label { font-size: 0.85rem; }
+  .drawer.person .sheet legend { font-size: 0.95rem; }
+  .drawer.person .sheet input, .drawer.person .sheet select, .drawer.person .sheet textarea { min-height: 42px; font-size: 1rem; }
+  .drawer.person .sheet button { min-height: 42px; font-size: 1rem; }
+}
